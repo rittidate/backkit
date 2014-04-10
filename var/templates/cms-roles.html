@@ -1,0 +1,84 @@
+<link rel="stylesheet" type="text/css" media="screen" href="./Includes/assets/jqgrid/css/ui.jqgrid.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.filter.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/prettify.css" />
+
+<script src="./Includes/assets/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqui/js/jquery-ui-1.8.7.custom.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/i18n/grid.locale-en.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/prettify.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.filter.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqvalidate/jquery.validate.js" type="text/javascript"></script>
+<script src="./Includes/assets/js/jquery.blockUI.js" type="text/javascript"></script>
+
+<div id="messageDialog"></div>
+<style>
+    .pnlAddEditOnly {
+        background-color: #ffffff;
+        padding:0px;
+        margin:25px 10px 10px;
+    }
+    .pnlContainer{
+        width: 100%
+    }
+    
+    .g_ele1, .g_ele2{
+        float:left;margin-right:15px; margin-top: 8px;
+    }
+    .g_ele1 label{
+        width:200px;
+    }
+    .el_back{
+        float:left;margin-right:50px; margin-top: 25px;
+    }
+    .el_save{
+        float:left; margin-top: 25px;
+    }
+</style>
+<form id="frm{$variable_el}">
+        <div class="pnlContainer">
+                <div id="pnlGrid{$variable_el}" class="show" >
+                         <!-- Includes Publisher Grid -->      
+                         {$roles_grid}
+                </div>                
+                    <div id="pnlAddEdit">
+                        <div id="content">
+                            <div class="pnlAddEditOnly" style="background-color:#ffffff">
+                                <section>
+                                    <div class="g_ele1" style="float:left;">
+                                        <label for="txt_roles_name">{$smarty.const.MSG_ROLES_NAME}
+                                        <input type="text"  id="txt_roles_name"  name="txt_roles_name" style="width:160px" class="concatname validate[required]" />
+                                        </label>
+                                    </div>
+
+                                    <br style="clear:both;" />
+
+                                    <div class="g_ele1">
+                                        <label for="txt_description">{$smarty.const.MSG_DESCRIPTION}
+                                        <textarea name="txt_description" id="txt_description" class="textarea"></textarea>   
+                                    </div>
+                                    
+                                    <br style="clear:both;" />
+                                    
+                                    <div id="r_select_roles_grid" style="margin-top:22px;">{$roles_detail_grid}</div>
+                                    
+                                    <br style="clear:both;" />
+                                    
+                                    <div class="el_back">
+                                        <div id="btnClose{$variable_el}" class="btndiv backto" ><span class="ui-icon ui-icon-circle-arrow-w" style="float:left;"></span>&nbsp;{$smarty.const.MSG_BACKTO}</div>
+                                    </div>
+                                    <div class="el_save">
+                                       <div id="btnSave{$variable_el}" class="btndiv" style="width:75px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE_AS}</div>
+                                    </div>
+                                    <br style="clear:both;" />
+                                            
+                                </section>
+                                
+                                
+                                </div>
+                            </div>
+                    </div>
+        </div>
+</form>

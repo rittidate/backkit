@@ -1,0 +1,171 @@
+html { visibility: hidden; }
+/* ::::: https://www.citibank.co.th/JFP/css/jfp.css ::::: */
+
+.navlb { padding-right: 3px; padding-left: 3px; font-weight: bold; font-size: 12px; color: rgb(52, 152, 202); text-align: center; text-decoration: none; }
+.navlb a:hover { padding-right: 3px; padding-left: 3px; font-weight: bold; font-size: 12px; color: rgb(16, 72, 129); text-align: center; text-decoration: none; }
+.link { font-weight: normal; font-size: 11px; color: rgb(1, 116, 180); text-decoration: none; }
+.apphdtbl { width: 100%; }
+#apphdtbl { width: 100%; }
+.apphddiv { height: 13px; }
+.apphdtitle { font-weight: bold; font-size: 12px; color: rgb(1, 116, 180); white-space: nowrap; }
+.appastbl {  }
+#appastbl {  }
+.apptxtlgbold { font-weight: bold; font-size: 11px; }
+.apptxtsm { font-size: 11px; }
+.appmmw { font-weight: bold; font-size: 11px; color: rgb(204, 0, 0); }
+.applabelfalt { font-weight: bold; font-size: 11px; width: 1%; white-space: nowrap; text-align: left; text-decoration: none; }
+.appnavtbl { width: 100%; }
+#appnavtbl { width: 100%; }
+.appnavl { padding-right: 12px; padding-left: 12px; width: 20%; white-space: nowrap; height: 25px; text-align: left; }
+.appnavlc { padding-right: 12px; padding-left: 12px; width: 20%; white-space: nowrap; height: 25px; text-align: left; }
+.appnavc { padding-right: 12px; padding-left: 12px; width: 20%; white-space: nowrap; height: 25px; text-align: center; }
+.appnavrc { padding-right: 12px; padding-left: 12px; width: 20%; white-space: nowrap; height: 25px; text-align: right; }
+.appnavr { padding-right: 12px; padding-left: 12px; width: 20%; white-space: nowrap; height: 25px; text-align: right; }
+a.appnavcncl:link, a.appnavcncl:hover, a.appnavcncl:visited { padding: 3px 10px; border-style: solid; border-color: rgb(0, 0, 0); -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; border-width: 0px 2px 2px 0px; font-weight: bold; display: inline-block; color: rgb(255, 255, 255); background-color: rgb(1, 116, 179); text-decoration: none; }
+.soinput { font-size: 11px; width: 100px; }
+.soinput { font-size: 9px; width: 180px; font-family: arial,verdana,helvetica; }
+body, div, span, ol, ul, li, dl, dt, dd, img, p, form { margin: 0px; padding: 0px; }
+body, a, a:hover, div, table, td, th, ol, ul, li, dl, dt, dd, img, p, form, input, select { font-family: arial,verdana,helvetica; font-size: 11px; color: rgb(102, 102, 102); }
+body { text-align: center; }
+p { margin-top: 14px; }
+img { border: 0px none; }
+a { color: rgb(1, 116, 180); text-decoration: none; cursor: pointer; outline: medium none; }
+a:link { color: rgb(1, 116, 180); text-decoration: none; cursor: pointer; outline: medium none; }
+a:visited { text-decoration: none; outline: medium none; }
+a:hover { color: rgb(1, 116, 180); text-decoration: underline; outline: medium none; }
+a:active { text-decoration: underline; outline: medium none; }
+ul { list-style: none outside none; }
+.fleft { float: left; }
+.fright { float: right; }
+.clear { clear: both; }
+.vmdile { vertical-align: middle; }
+.vmdile img, .vmdile span, .vmdile b, .vmdile a, .vmdile input, .vmdile select { vertical-align: middle; display: inline-block; }
+.quick_lnkoff { padding: 4px 6px 5px 3px; width: 192px ! important; display: inline-block; }
+.quicklnkbox { margin-left: -223px ! important; width: 422px; display: block; position: absolute; border-right: 1px solid rgb(52, 152, 204); border-width: medium 1px 1px; border-style: none solid solid; border-color: -moz-use-text-color rgb(52, 152, 204) rgb(52, 152, 204); -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; background: url('portlet_bg.gif') repeat-x scroll 0px 100% rgb(254, 254, 254); }
+.quicklnkbox .linebord { width: 400px; }
+.quicklnkbox .linebord img { padding-left: 3px; width: 220px; border-top: 1px solid rgb(52, 152, 204); display: block; vertical-align: top; }
+.quicklnkbox ul { padding: 3px 0px 10px; display: inline-block; width: 203px; float: left; border: 0px solid; }
+a.appnavcnclOtp:link, a.appnavcncl:hover, a.appnavcncl:visited { padding: 3px 10px; border-style: solid; border-color: rgb(0, 0, 0); -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; border-width: 0px 2px 2px 0px; font-weight: bold; display: inline-block; color: rgb(255, 255, 255); background-color: rgb(1, 116, 179); text-decoration: none; }
+/* ::::: https://www.citibank.co.th/JPC/portal/css/JPC.css ::::: */
+
+.clearfloat { clear: both; }
+html, body { margin-top: 10px ! important; text-align: center; }
+body { text-align: center; font-family: arial,verdana,helvetica,sans-serif; font-size: 11px; color: rgb(73, 73, 73); }
+a { text-decoration: none; font-family: arial,verdana,helvetica,sans-serif; font-size: 11px; color: rgb(1, 116, 180); }
+a:hover { text-decoration: underline; }
+ul { list-style: none outside none; }
+li { margin: 0px; padding: 0px; }
+li a, li a:hover { padding: 0px; }
+.fleft { float: left; }
+.fright { float: right; }
+.clear { clear: both; }
+#JPCWebRefreshLayout { width: 950px; margin: 0px auto; text-align: left; }
+#webRefreshPortalHeader { width: 100%; color: rgb(153, 153, 153); float: left; }
+#webRefreshPortalSubHeader { margin-top: 10px; width: 100%; float: left; }
+#webRefreshAppSubNav { width: 100%; float: left; }
+#webRefreshAppTitle { width: 100%; float: left; }
+#webRefreshPortalBody { padding: 12px 9px; width: 930px ! important; border-right: 1px solid rgb(52, 152, 204); border-width: 0px 1px 1px; border-style: none solid solid; border-color: -moz-use-text-color rgb(52, 152, 204) rgb(52, 152, 204); -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; float: left; }
+#webRefreshPortalFooter { clear: both; float: left; width: 100%; margin: 12px 0px; height: 86px; }
+#webRefreshPortalNavBar { float: right; width: 220px; }
+#webRefreshPortalLeftBody { float: left; width: 700px; margin: 0px; }
+#webRefreshPortalAppAndAd { float: left; width: 100%; }
+#webRefreshAppLayout { width: 100%; }
+#webRefreshAppBody { width: 100%; float: left; }
+#webRefreshAppBodyNav { width: 948px; float: left; border-left: 1px solid rgb(52, 152, 204); border-right: 1px solid rgb(52, 152, 204); }
+#webRefreshPromotion { width: 100%; float: left; }
+#webRefreshHeaderLayout { width: 100%; }
+#webRefreshHeaderTop { float: left; width: 100%; }
+#webRefreshimgHeaderLogoTop { float: left; margin-top: 6px; }
+#webRefreshHeaderlink { float: right; text-align: right; padding-right: 20px; margin-top: 3px; }
+#webRefreshSearchBox { float: right; width: 198px; height: 28px; text-align: right; background: url('searchbg.jpg') no-repeat scroll 0% 0% transparent; margin-bottom: 4px; }
+#searchInputBox { float: left; margin-top: 6px; margin-left: 5px; width: 100px; border: 0px none; }
+#webRefreshDateBox { float: left; color: rgb(73, 73, 73); margin-top: 8px; padding: 0px 10px 0px 200px; }
+#webRefreshHeaderBody { clear: both; height: 93px; color: rgb(153, 153, 153); background: url('hd_bg.gif') repeat-x scroll 0% 0% transparent; width: 100%; }
+#webRefreshHeaderBodyLeft { float: left; }
+#webRefreshimgHeaderLogo { float: left; padding-top: 7px; }
+#webRefreshHeaderBodyRight { padding-right: 12px; height: 93px; float: left; width: 916px ! important; }
+#webRefreshHeaderBodyRightTop { width: 916px ! important; margin-top: 6px; height: 20px; }
+#webRefreshEditPreference { float: right; margin-left: 15px; margin-top: 10px; }
+#webRefreshEditPreference td { padding: 0px 5px; }
+#webRefreshWelcomeMsg { float: right; text-align: right; margin-top: 10px; }
+#webRefreshHeaderBodyRightBottom { width: 916px ! important; margin-top: 5px; float: left; }
+#webRefreshHeadderMenu { float: left; width: 740px; }
+#webRefreshimgSignOn { float: right; width: 77px; position: relative; right: 15px; bottom: -10px; }
+#webrefreshHeaderBottomCenter { width: 939px; float: left; height: 43px; background: url('pershd_bg.gif') repeat-x scroll 0% 0% transparent; }
+.hdtxt { padding: 10px 0px 0px 15px; float: left; font-size: 18px; color: rgb(255, 255, 255); }
+#Webrefreshheaderbottom { float: left; width: 950px; background: url('pershd_bg.gif') repeat-x scroll 0% 0% transparent; height: 43px; overflow: hidden; }
+#webRefreshFooterLayout { clear: both; }
+#webRefreshFooterBottom { width: 950px; clear: both; font-size: 92%; color: rgb(153, 153, 153); background-repeat: repeat-x; }
+#webRefreshCopyright { float: right; padding: 0px 10px; }
+#webRefreshPortalSubMenuA { width: 100%; float: left; font-weight: bold; font-size: 11px; font-family: Arial,Helvetica,sans-serif; text-align: center; text-decoration: none; }
+#webRefreshPortalSubMenuA ul { list-style: none outside none; margin: 0px; padding: 9px 0px 0px; }
+#webRefreshPortalSubMenuA ul li a, #portalSubMenuA ul strong { font-size: 13px; float: left; display: block; color: rgb(62, 161, 212); padding: 5px 10px ! important; text-decoration: none; }
+#webRefreshPortalSubMenuA a span { float: left; }
+#webRefreshPortalSubMenuA ul a img { border: 0px none; margin-top: 8px; padding: 0px; }
+#webRefreshPortalSubMenuA ul li { float: left; color: rgb(62, 161, 212); margin: 0px; border-left: 1px solid rgb(255, 255, 255); border-right: 1px solid rgb(255, 255, 255); }
+#webRefreshPortalSubMenuA ul li.current, #webRefreshPortalSubMenuA ul li.hcurrent { background: url('hd_tabbg.gif') repeat scroll 0px center transparent; color: rgb(16, 72, 129); border-left: 1px solid rgb(215, 215, 215); border-right: 1px solid rgb(215, 215, 215); }
+#webRefreshPortalSubMenuA ul li:hover { color: rgb(16, 72, 129); background: url('hd_tabbg.gif') repeat scroll 0px center transparent; border-left: 1px solid rgb(215, 215, 215); border-right: 1px solid rgb(215, 215, 215); }
+#webRefreshPortalSubMenuA ul a:hover, #webRefreshPortalSubMenuA ul li.current > a, #webRefreshPortalSubMenuA ul li.hcurrent > a { color: rgb(16, 72, 129); }
+#webRefreshPortalSubMenuA .dropdown_myacc { width: 160px; position: absolute; display: none; background: url('menu_dropbg.gif') repeat-x scroll 0px 0px rgb(255, 255, 255); text-align: left; border-right: 1px solid rgb(222, 222, 222); border-width: medium 1px 1px; border-style: none solid solid; border-color: -moz-use-text-color rgb(222, 222, 222) rgb(222, 222, 222); -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; margin-top: 10px ! important; }
+#webRefreshPortalSubMenuA .dropdown_myacc ul { width: 160px; }
+#webRefreshPortalSubMenuA .dropdown_myacc ul li, #webRefreshPortalSubMenuA .dropdown_myacc ul li:hover { width: 158px; border: medium none; background: none repeat scroll 0% 0% transparent; }
+#webRefreshPortalSubMenuA .dropdown_myacc a { padding: 4px 10px; text-decoration: none; font-weight: normal; border: medium none; color: rgb(62, 161, 212); }
+#webRefreshPortalSubMenuA .dropdown_myacc a:hover { text-decoration: underline; border: medium none; color: rgb(16, 72, 129); }
+#webRefreshPortalSubMenuA .dropdown_inv { width: 200px; position: absolute; display: none; background: url('menu_dropbg.gif') repeat-x scroll 0px 0px rgb(255, 255, 255); text-align: left; border-right: 1px solid rgb(222, 222, 222); border-width: medium 1px 1px; border-style: none solid solid; border-color: -moz-use-text-color rgb(222, 222, 222) rgb(222, 222, 222); -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; margin-top: 10px ! important; }
+#webRefreshPortalSubMenuA .dropdown_inv ul { width: 200px; }
+#webRefreshPortalSubMenuA .dropdown_inv ul li, #webRefreshPortalSubMenuA .dropdown_inv ul li:hover { width: 180px; border: medium none; background: none repeat scroll 0% 0% transparent; }
+#webRefreshPortalSubMenuA .dropdown_inv a { padding: 4px 10px; text-decoration: none; font-weight: normal; border: medium none; color: rgb(62, 161, 212); }
+#webRefreshPortalSubMenuA .dropdown_inv a:hover { text-decoration: underline; border: medium none; color: rgb(16, 72, 129); }
+#webRefreshPortalSubMenuB { width: 950px; height: 40px; font-weight: bold; color: rgb(0, 60, 122); }
+#webRefreshPortalSubMenuB a { font-size: 11px; font-weight: bold; color: rgb(62, 161, 212); font-family: Arial,Helvetica,sans-serif; background: url('subnav_lnkbox_bg.gif') repeat-x scroll 0% 0% transparent; border-left: 1px solid rgb(204, 204, 204); border-right: 1px solid rgb(204, 204, 204); border-bottom: 1px solid rgb(52, 152, 204); text-align: center; display: block; height: 32px; padding-top: 8px; }
+#webRefreshPortalSubMenuB .current a, #webRefreshPortalSubMenuB li a:hover, #webRefreshPortalSubMenuB li a:active, #webRefreshPortalSubMenuB td a:hover { background: url('subnav_lnkbox_activebg.gif') repeat-x scroll 0% 0% transparent; border-left: 1px solid rgb(52, 152, 204); border-right: 1px solid rgb(52, 152, 204); border-bottom: 1px solid rgb(255, 255, 255); color: rgb(16, 72, 129); }
+#webRefreshPortalSubMenuB table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+#webRefreshPortalSubMenuB table td { margin: 0px; padding: 0px; height: 40px; }
+#webRefreshPortalSubMenuC { margin: 12px 0px 0px; width: 100%; }
+#webRefreshPortalSubMenuC ul { list-style: none outside none; margin: 0px; padding: 0px 0px 2px; border: 0px none; width: 100%; height: 25px; background: url('mn3_bg.gif') repeat-x scroll 0px 100% rgb(254, 254, 254); }
+#webRefreshPortalSubMenuC ul li { float: left; height: 25px; border: 0px none; padding: 0px; }
+#webRefreshPortalSubMenuC ul li.first { width: 12px; margin: 0px; }
+#webRefreshPortalSubMenuC ul li.last { float: right; margin: 0px; }
+#webRefreshPortalSubMenuC ul a { float: left; display: block; padding: 5px 10px 0px; border-left: 1px solid rgb(255, 255, 255); border-right: 1px solid rgb(255, 255, 255); height: 20px; font-size: 11px; color: rgb(62, 161, 212); font-family: Arial,Helvetica,sans-serif; text-align: center; font-weight: bold; }
+#webRefreshPortalSubMenuC .current a, #webRefreshPortalSubMenuC li a:hover { background: url('subnav_lnkbox_activebg.gif') repeat-x scroll 0% 0% transparent; color: rgb(16, 72, 129); text-decoration: none; border-width: 1px; border-style: solid; border-color: rgb(52, 152, 204) rgb(52, 152, 204) rgb(255, 255, 255); }
+.headerWelcome1 { color: rgb(102, 102, 102); font-family: arial,verdana,helvetica,sans-serif; font-size: 11px; float: right; padding-left: 10px; }
+.headerWelcome2 { padding-left: 5px; color: rgb(102, 102, 102); font-weight: bold; font-family: arial,verdana,helvetica,sans-serif; font-size: 11px; float: right; font-style: italic; }
+.PortletControllerStyleClass, PortletControllerStyleClass table { font-weight: normal; padding: 0px; margin: 0px; border: 0px none; }
+.portletContainer { margin-left: -2px; }
+.PortletControllerStyleClass div.portletContainer { background: url('plt_hd.gif') no-repeat scroll 0px 0px rgb(254, 254, 254); padding: 5px 0px 0px; width: 220px; }
+.PortletControllerStyleClass div.portletOuterWapper { background: url('plt_fot.gif') no-repeat scroll 0px 100% rgb(254, 254, 254); padding: 0px 0px 5px; }
+.PortletControllerStyleClass .RightPortletStyleClass { border-left: 1px solid rgb(204, 204, 204); border-right: 1px solid rgb(204, 204, 204); background: url('plt_bg.gif') repeat-x scroll 0px 100% rgb(254, 254, 254); }
+.PortletControllerStyleClass .PortletTitleStyleClass { font-weight: bold; color: rgb(51, 51, 51); font-size: 12px; text-transform: capitalize; }
+.PortletControllerStyleClass .RightPortletStyleClass * { background-color: transparent; }
+.PortletControllerStyleClass .PortletContentStyleClass td { padding: 5px; }
+.PortletControllerStyleClass .PortletTitleStyleClass td { padding: 0px 5px; }
+.PortletControllerStyleClass ul li { background: url('blue_bull.gif') no-repeat scroll 10px 5px transparent; padding: 0px 0px 5px 20px; }
+.PortletControllerStyleClass .quicklnkbox { background: url('plt_bg.gif') repeat-x scroll 0px 100% rgb(254, 254, 254); }
+.timeout_overlay { display: none; position: absolute; top: 25%; left: 25%; width: 600px; height: 150px; padding: 16px; border: medium none; background-color: white; z-index: 1002; overflow: auto; }
+.black_overlay { display: none; position: absolute; top: 0%; left: 0%; width: 100%; height: 100%; background-color: black; z-index: 1001; opacity: 0.8; }
+/* ::::: https://www.citibank.co.th/JPC/esearch/css/esearch.css ::::: */
+
+.ac_results { padding: 0px; border: 1px solid windowframe; background-color: window; overflow: hidden; z-index: 350; margin-top: inherit; }
+/* ::::: https://www.citibank.co.th/JPS/portal/css/customize.css ::::: */
+
+/* ::::: https://www.citibank.co.th/JPC/ctc/css/ctcstyle.css ::::: */
+
+ul li.last { border: 1px solid red; }
+@media not all {
+}
+/* ::::: https://www.citibank.co.th/th/css/global.css ::::: */
+
+body { margin: 0px; font-family: Arial,Helvetica,sans-serif; }
+p, ul, ol, li, form, h1, h2, h3, h4, h5, h6, font { margin: 0px; padding: 0px; list-style: none outside none; }
+a, a:hover { outline: medium none; }
+a { color: rgb(51, 153, 204); text-decoration: none; }
+a:hover { color: rgb(0, 0, 102); text-decoration: underline; }
+img { border: 0px none; }
+#footer-container { margin: 0px 0px 33px; font-size: 11px; font-family: Arial,Helvetica,sans-serif; }
+.footer-logo { vertical-align: top; padding: 2px 0px 0px; }
+.foot-links { border-bottom: 1px solid rgb(214, 214, 214); border-top: 1px solid rgb(214, 214, 214); padding: 7px 0px; margin-bottom: 7px; }
+.foot-links a { color: rgb(102, 102, 102); text-decoration: none; }
+.foot-links a:hover { color: rgb(51, 153, 204); text-decoration: underline; }
+.foot-links ul { float: right; }
+.foot-links ul li { float: left; margin-left: 23px; }
+.foot-gray { color: rgb(153, 153, 153); }

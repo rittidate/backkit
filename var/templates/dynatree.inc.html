@@ -1,0 +1,271 @@
+<script  type="text/javascript">
+     var DYNATREE = new Object();
+    DYNATREE = function(idTree, url){
+    var objContentCat = this;
+    var maxSelectNode = 3;
+    this.objWebsiteSectionId;
+    this.obj = [];
+    this.objSearch = [];
+    this.objSelect;
+    this.valSelect;
+    this.msgContentCatDefault;
+            
+            this.eventDynatree = function(){
+                $("#{$variable_el}dynKeywords").change(function(){
+                    var keyword = $(this).val();
+                    objContentCat.search(keyword);
+                });
+                
+                $(".{$variable_el}dynatree_check_all").click(function(){
+                    $(idTree).dynatree("getRoot").visit(function(node){
+                      node.select(true);
+                    });
+                    return false;
+                });
+                
+                $(".{$variable_el}dynatree_uncheck_all").click(function(){
+                    $(idTree).dynatree("getRoot").visit(function(node){
+                      node.select(false);
+                    });
+                    return false;
+
+                });
+                
+                $(".{$variable_el}dynatree_close").click(function(){
+                    $("#filter_menu_product").removeClass('ui-state-active');
+                    $("#{$variable_el}blockContent").hide();
+                    return false;
+                }).mousedown(function(){
+                        isClose = true;
+                });
+            }
+
+
+            this.iniDynatree = function(idTree, data, checkbox){
+
+            $(idTree).dynatree({
+                checkbox: checkbox,
+                selectMode: 3,
+                children: data,
+                onDblClick: function(node, event) {
+                node.toggleExpand();
+                },
+                onSelect: function(select, node) {
+
+                    // Display list of selected nodes
+                    objContentCat.objSelect = [];
+                    objContentCat.valSelect = [];
+                    var selNodes = node.tree.getSelectedNodes();
+                    var selKeys = $.map(selNodes, function(node){
+                        objContentCat.valSelect.push(node.data.key);
+                   });
+
+                   // Get a list of all selected TOP nodes
+                    var selRootNodes = node.tree.getSelectedNodes(true);
+                    // ... and convert to a key array:
+                    var selRootKeys = $.map(selRootNodes, function(node){
+                      return node.data.key;
+                    });
+                    //$("#echoSelectionRootKeys3").text(selRootKeys.join(", "));
+                    //$("#echoSelectionRoots3").text(selRootNodes.join(", "));
+                    //console.log(selRootKeys.join(", "));
+                    //console.log(selRootNodes);
+                    //console.log(selRootNodes.join(", "));
+                    objContentCat.msgSelectRoot = objContentCat.msgSelectRootNode(selRootNodes);
+                    if (selNodes.length > 0)
+                            objContentCat.objSelect.push(selNodes);
+
+                    objContentCat.msgContentCategory(selNodes, maxSelectNode);
+                },
+                onKeydown: function(node, event) {
+                    if (event.which == 32) {
+                    node.toggleSelect();
+                            return false;
+                    }
+                },
+                    // The following options are only required, if we have more than one tree on one page:
+                    // initId: "treeData",
+                    cookieId: "dynatree-Cb3",
+                    idPrefix: "dynatree-Cb3-"
+            });
+                    $(idTree).dynatree("getTree").reload();
+                    objContentCat.eventDynatree();
+            }
+
+            this.msgContentCategory = function(selNodes, maxSelect){
+            var msgContentCat = '';
+                    $.each(selNodes, function(i, v){
+                    if (v.data.title != undefined){
+                    if (i == 0){
+                    msgContentCat += v.data.title.split("_").pop().split(">").pop();
+                            //console.log(msgContentCat);
+                    } else{
+                    msgContentCat += ", " + v.data.title.split("_").pop().split(">").pop();
+                    }
+                    }
+                    if (maxSelect !== undefined){
+                    if (i > maxSelect - 1){
+                    msgContentCat = (i + 1) + " Selected";
+                    }
+                    }
+                    });
+                    if (msgContentCat == ''){
+            msgContentCat = objContentCat.msgContentCatDefault;
+            }
+            $(".msgContentCategory").text(msgContentCat);
+            }
+
+            this.msgSelectRootNode = function(selNodes){
+                var msgContentCat = '';
+                    $.each(selNodes, function(i, v){
+                    if (v.data.title != undefined){
+                    if (i == 0){
+                    msgContentCat += v.data.title.split("_").pop().split(">").pop();
+                            //console.log(msgContentCat);
+                    } else{
+                        msgContentCat += ", " + v.data.title.split("_").pop().split(">").pop();
+                    }
+                    if (i > 5){
+                        msgContentCat = (i + 1) + " Selected";
+                    }
+                    }
+                    
+                    });
+                    if (msgContentCat == ''){
+                        msgContentCat = 'ALL';
+                    }
+                    //console.log(msgContentCat)
+                    return msgContentCat;
+            }
+
+            this.loadData = function(idTree, url, checkbox, pkid){
+            $.getJSON(url, { oper : 'getDynatree' },
+                function(data){
+                    objContentCat.jsonData = data;
+                    objContentCat.iniDynatree(idTree, data, true);
+                    var node = $(idTree).dynatree("getRoot");
+                    node.sortChildren(null, true);
+                    var selNodes = $(idTree).dynatree("getSelectedNodes");
+                    objContentCat.msgContentCategory(selNodes, maxSelectNode);
+                    objContentCat.objSelect = [];
+                    //var select_nodes = idTree.dynatree("getSelectedNodes");
+                    if (selNodes.length > 0){
+                        objContentCat.objSelect.push(selNodes);
+                    }
+                    $('.dynatree-container').css({ 'border' : 'none' });
+                });
+           
+            }
+
+            this.searchJSON = function(jsonData, keyword){
+                $.each(jsonData, function(i, v) {
+                if (v.title.search(new RegExp(keyword, 'i')) != - 1) {
+                    var tree = $("#tree").dynatree("getTree");
+                            var node = tree.getNodeByKey(v.key);
+                            objContentCat.obj.push(node);
+                    }
+                    objContentCat.searchJSON(v.children, keyword);
+                });
+            }
+
+            this.searchTitle = function(v){
+                if (v !== null){
+                    if (v.data.key != 'root'){
+                        if (v.parent !== null){
+                            if (v.parent.data.key == 'root'){
+                                return v.data.title + objContentCat.searchTitle(v.parent);
+                            } else
+                            if (objContentCat.searchTitle(v.parent) !== ''){
+                                return objContentCat.searchTitle(v.parent) + '>' + v.data.title;
+                            } else return v.data.title;
+                        } else return '';
+                    } else return '';
+                }
+            }
+
+            this.clearJson = function(jsonData){
+                if (jsonData != undefined && jsonData.length > 0){
+                    $.each(jsonData, function(i, v){
+                        if (v.children != undefined && v.children.length > 0){
+                            v.children = objContentCat.clearJson(v.children);
+                        } else{
+                            if (v != undefined && v.select){
+                                v.select = false;
+                            }
+                        }
+                    });
+                }
+                return jsonData;
+            }
+
+            this.search = function(keyword){
+
+                objContentCat.clearJson(objContentCat.jsonData);
+                objContentCat.iniDynatree(idTree, objContentCat.jsonData, true);
+                
+                var objTree = $(idTree).dynatree("getTree");
+                
+                $(idTree).dynatree("getRoot").sortChildren(null, true);
+                
+                if (objContentCat.objSelect !== undefined && objContentCat.objSelect.length > 0){
+                    $.each(objContentCat.objSelect[0], function(i, node){
+                        objTree.selectKey(node.data.key);
+                    });
+                }
+
+                if (keyword.length > 0){
+                var aTree = [];
+                var sumTree = [];
+                objContentCat.obj = [];
+                var nodes = $(idTree).dynatree("getSelectedNodes");
+                if (nodes.length > 0){
+                    $.each(nodes, function(i, node){
+                    objContentCat.obj.push(node);
+                    });
+                }
+
+                objContentCat.searchJSON(objContentCat.jsonData, keyword);
+                    //console.log(objContentCat.objSelect)
+                $.each(objContentCat.obj, function(i, v){
+                    var title = '';
+                    title = objContentCat.searchTitle(v);
+                    if (v !== null){
+                    if (objContentCat.objSelect !== undefined){
+                    if (objContentCat.objSelect.length > 0 && i < objContentCat.objSelect[0].length){
+                    aTree.push({ title: title, key: v.data.key, icon: false, select: true });
+                    } else{
+                    aTree.push({ title: title, key: v.data.key, icon: false });
+                    }
+                    } else{
+                    aTree.push({ title: title, key: v.data.key, icon: false });
+                    }
+                    }
+                    });
+                    if (objContentCat.objSelect.length > 0 && objContentCat.objSelect !== undefined){
+            for (i = objContentCat.objSelect[0].length; i < aTree.length; i++){
+            $.each(objContentCat.objSelect[0], function(int, val){
+            if (aTree[i] != undefined){
+            if (val.data.key == aTree[i].key){
+            delete aTree[i];
+            }
+            }
+            });
+            }
+            }
+
+            $.each(aTree, function(i, v){
+                if (v != undefined){
+                    sumTree.push(v);
+                }
+            });
+            objContentCat.iniDynatree(idTree, sumTree, true);
+            var node = $(idTree).dynatree("getRoot");
+            node.sortChildren(null, true);
+            }
+            
+            $('.dynatree-container').css({ 'border' : 'none' });
+            }
+
+    }
+
+</script>

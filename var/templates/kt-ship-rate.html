@@ -1,0 +1,101 @@
+<link rel="stylesheet" type="text/css" media="screen" href="./Includes/assets/jqgrid/css/ui.jqgrid.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.filter.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/prettify.css" />
+
+<script src="./Includes/assets/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqui/js/jquery-ui-1.8.7.custom.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/i18n/grid.locale-en.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/prettify.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.filter.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqvalidate/jquery.validate.js" type="text/javascript"></script>
+<script src="./Includes/assets/js/jquery.blockUI.js" type="text/javascript"></script>
+<table cellpadding="2" style="margin:0px;padding-left:10px;font-size:9pt;" border="0px">
+</table>
+
+<div id="messageDialog"></div>
+
+
+<form id="frm{$variable_el}">
+    <fieldset>
+        <div class="pnlContainer">
+                <div id="pnlGrid{$variable_el}" class="show" >
+            	    <div class="row-fluid">
+				    <div class="span3"><select id="filter_ship_company" title="filter_ship_company" name="filter_ship_company"></select></div>
+				    <div class="span3"><select id="filter_ship_type" title="filter_ship_type" name="filter_ship_type"></select></div>
+				    </div>
+                         <!-- Includes Publisher Grid -->
+                         {$ship_rate_grid}
+                </div>
+                    <div id="pnlAddEdit">
+                        <div id="content" style="margin-left:15px">
+                            <div class="pnlAddEditOnly">
+                                <table cellpadding="3" style="margin:0px;font-size:9pt" border="0">
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_SHIP_COMPANY}</td>
+                                            <td>
+                                                <input type="hidden" id="txt_id" name="txt_id"/>
+                                                <select class="span3" id="select_ship_company" name="select_ship_company"></select>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_SHIP_TYPE}</td>
+                                            <td>
+                                            	<select class="span3" id="select_ship_type" name="select_ship_type"></select>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_ZONE}</td>
+                                            <td>
+                                                <input type="text" class="input-medium" id="txt_zone" name="txt_zone"/>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_MIN}</td>
+                                            <td>
+                                                <input type="text" class="input-medium" id="txt_min" name="txt_min"/>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_MAX}</td>
+                                            <td>
+                                                <input type="text" class="input-medium" id="txt_max" name="txt_max"/>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_RATE_PRICE}</td>
+                                            <td>
+                                                <input type="text" class="input-medium" id="txt_rate_price" name="txt_rate_price"/>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_ACTIVE}</td>
+                                            <td>
+                                                <input type="checkbox" id="chk_is_active" name="txt_is_active" value="Y" />
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: left;vertical-align: bottom;"><div id="btnClose{$variable_el}" class="btndiv backto" ><span class="ui-icon ui-icon-circle-arrow-w" style="float:left;"></span>&nbsp;{$smarty.const.MSG_BACKTO}</div></td>
+                                            <td style="float:right;vertical-align: bottom;" ><br/><br/>
+                                                <div id="btnSave{$variable_el}" class="btndiv" style="width:55px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE}</div>
+                                                <div id="btnSaveBack{$variable_el}" class="btndiv" style="width:120px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;margin-right: 10px;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE_BACK}</div>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        
+                                    </table>
+                                </div>
+                            </div>
+                    </div>
+        </div>
+        </fieldset>
+</form>

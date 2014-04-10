@@ -1,0 +1,59 @@
+{if is_array($aSectionNav)}
+
+
+    <div class="subnavbar-inner">
+
+            <div class="container">
+
+                    <a class="btn-subnavbar collapsed" data-toggle="collapse" data-target=".subnav-collapse">
+                            <i class="icon-reorder"></i>
+                    </a>
+
+                    <div style="height: 0px;" class="subnav-collapse collapse">
+                            <ul class="mainnav">
+                                {section name=n loop=$aSectionNav}
+                                {if is_array($sectionSubNavParent)}
+                                    {if in_array($aSectionNav[n].menu, $sectionSubNavParent)}
+                                        <li class="dropdown {if $aSectionNav[n].selected}active{/if}">
+                                                <a href="javascript:;" class="dropdown-toggle" data-toggle="dropdown">
+                                                        <i class="{$aSectionNav[n].class|escape}"></i>
+                                                        <span>{$aSectionNav[n].title|escape}</span>
+                                                        <b class="caret"></b>
+                                                </a>
+
+                                                <ul class="dropdown-menu">
+                                                    <li><a href="{$adminBaseURL}{$aSectionNav[n].filename|escape}">{$aSectionNav[n].title|escape}</a></li>
+                                                    {section name=sub loop=$aSectionSubNav}
+                                                        {if $aSectionNav[n].menu == $aSectionSubNav[sub].parent}
+                                                        <li><a href="{$adminBaseURL}{$aSectionSubNav[sub].filename|escape}">{$aSectionSubNav[sub].title|escape}</a></li>
+                                                        {/if}
+                                                    {/section}
+                                                </ul>
+                                        </li>
+                                    {else}
+                                        <li class="{if $aSectionNav[n].selected}active{/if}">
+                                            <a href="{$adminBaseURL}{$aSectionNav[n].filename|escape}">
+                                                    <i class="{$aSectionNav[n].class|escape}"></i>
+                                                    <span>{$aSectionNav[n].title|escape}</span>
+                                            </a>
+                                        </li>
+                                    {/if}
+                                {else}
+                                        <li class="{if $aSectionNav[n].selected}active{/if}">
+                                            <a href="{$adminBaseURL}{$aSectionNav[n].filename|escape}">
+                                                    <i class="{$aSectionNav[n].class|escape}"></i>
+                                                    <span>{$aSectionNav[n].title|escape}</span>
+                                            </a>
+                                        </li>
+                                {/if}
+                                {/section}
+
+                            </ul>
+                    </div> <!-- /.subnav-collapse -->
+
+            </div> <!-- /container -->
+
+    </div> <!-- /subnavbar-inner -->
+
+
+{/if}

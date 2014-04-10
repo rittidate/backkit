@@ -1,0 +1,68 @@
+            
+<form action="{$action}" method="post" enctype="multipart/form-data" name="settingsform" id="settingsform">
+
+                <h3>{$smarty.const.STR_USER_DETAIL}</h3>
+                <table class="table table-striped" cellspacing="0" cellpadding="0" border="0">
+                    <tbody>
+                        <tr>
+                            <td>&nbsp;<input type="hidden" value="true" name="submitok"></td>
+                            <td valign="top" id="cell_username">{$smarty.const.STR_USERNAME}</td>
+                            <td valign="top">
+                                &nbsp;{$username}
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td valign="top" id="cell_email_address">{$smarty.const.STR_EMAILADDRESS}</td>
+                            <td valign="top">
+                                &nbsp;{$email_address}
+                            </td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td valign="top" class="cellenabled" id="cell_contact_name">{$smarty.const.STR_FULLNAME}
+                            </td>
+                            <td valign="top">
+                                <input type="text" tabindex="1" value="{$contact_name}" id="contact_name" required name="contact_name" class="input-large">
+                                <span class="field-hint"></span>
+                            </td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3>{$smarty.const.STR_LANGUAGE}</h3>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr>
+                            <td>&nbsp;</td>
+                            <td class="cellenabled" id="cell_language">{$smarty.const.STR_LANGUAGE}</td>
+                            <td>
+                                <select id="language" name="language" class="span2">
+                                      {foreach name=outer item=item from=$languageOptions}
+                                            {if $item.value==$language_id}
+                                            <option value="{$item.value}" selected>{$item.label}</option>
+                                            {else}
+                                            <option value="{$item.value}">{$item.label}</option>
+                                            {/if}
+                                      {/foreach}
+                                </select>
+                            </td>
+                            <td>&nbsp;</td>
+                        </tr>
+                         <tr>
+                            <td>&nbsp;</td>
+                            <td class="cellenabled">{$smarty.const.STR_THEME}</td>
+                            <td>
+                                    <select id="theme" name="theme" class="span2" >
+                                        {html_options options=$ThemeOptions selected = $theme_id}
+                                    </select>
+                            </td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <input type="submit" tabindex="3" value="{$smarty.const.STR_SAVE_CHANGE}" name="submitsettings">
+
+            </form>

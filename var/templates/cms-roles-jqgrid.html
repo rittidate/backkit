@@ -1,0 +1,312 @@
+{include file="grid-wrapper.inc.html"}
+<script  type="text/javascript">
+    
+    //MGMT{$variable_el}.prototype = Object.create( GridBase.prototype);
+    
+    MGMT{$variable_el}.prototype = new GridBase(); // inherit class GridBase();
+    function MGMT{$variable_el}(aInfo){
+        //GridBase.call(this, aInfo ); // call constructor super class
+        this.constructor(aInfo);
+        var thisClass = this;
+        this.hideMid = ['update_date'];
+        this.hideLarge = ['create_date'];
+        var formId = "#frm{$variable_el}";
+        var rule = {
+                txt_roles_name:{
+                    required: true,
+                },
+            };
+
+        this.dataSearch = function()
+        {
+            var keyword = jQuery("#keyword{$variable_el}").val();
+            //var s_txt_channel_name = jQuery("#s_txt_channel_name").val();
+            var oData = { q:aInfo.classname,
+                oper:"search",
+                keyword:keyword
+                //s_txt_channel_name : s_txt_channel_name
+            };                
+            jQuery.extend(oData, this.optSearch);
+            //$(aInfo.grd).setPostData(oData);
+            $(aInfo.grd).jqGrid('setGridParam',{ postData: null }); 
+            $(aInfo.grd).jqGrid('setGridParam',{ postData:oData })
+            //clear param
+            $(aInfo.grd).jqGrid().setGridParam({ url : 'processajax.php?q=' + aInfo.classname +'&nd='+new Date().getTime()+'&fileclass='+ aInfo.fileclass })
+        }
+        
+        this.loadData = function(){
+            var url = $(aInfo.grd).getGridParam('url');
+     
+            //$("#pnlAddEdit").block(blockStyleCSS);
+            $.ajax({
+                        type: "POST",
+                        url: url,
+                        dataType: "json",
+                        data:{ pk_id:thisClass.hdnID, oper:'loadData' },
+                        success: function(data){
+                            thisClass.bindTxt(data);
+                            thisClass.bindChk(data);
+                            $('#pnlAddEdit').css('position', 'static');
+                            
+                            if(grdCms_Roles_Detail!=undefined){                            
+                                grdCms_Roles_Detail.loadData(thisClass.hdnID);
+                            }
+                            thisClass.unblockUI();
+                            //$("#pnlAddEdit").unblock();
+                        },
+                        error: function(response) {
+                                //$("#pnlAddEdit").unblock();
+                                if(isExpire(response.responseText)) return;
+                        }
+                });
+        }
+        
+        this.popContainAddEdit = function (oper, pk_id, title){
+        	this.blockUI();
+            this.closePnlGrid('pnlGrid{$variable_el}');    
+            this.hdnID = '';
+            
+            if(title==undefined)
+                title = '';
+
+            this.clearChk();
+            this.clearTxt();
+            
+            if(oper=='edit'){
+                this.hdnID = pk_id;
+                title = 'Edit ' + title;
+                $(".chk_is_delete").show();
+                $('#masterDetail').show();
+                $('#r_select_roles_grid').show();
+            }else{
+                $(".chk_is_delete").hide();
+                $('#r_select_roles_grid').hide();
+                title = 'New Record';
+            }
+            
+            thisClass.resetValidatForm(formId);
+            this.loadData();
+            
+            $('.noBreadcrumb .label').text(this.breadCrumbLabel + ' - ' + title);
+        }
+        
+        this.editAction = function(id){
+            if(this.isDetail==false){
+                var ret = $(aInfo.grd).getRowData(id);
+                this.popContainAddEdit('edit', id, ret.group_name);
+            }else{
+                window.location.href = aInfo.classname.replace(/_/g,'-').toLowerCase() + '?editID='+id;
+            }
+        }
+
+        this.saveData = function()
+        {         
+                    var url = $(aInfo.grd).getGridParam('url');
+                    var pk_id = this.hdnID;
+                    var objTxt = this.getTxt();
+                    var objChk = this.getChk();
+                    var oper;
+                    if($.trim(pk_id)!=''){
+                        oper = 'edit';
+                    }else{
+                        oper = 'add';
+                    }
+                    var o_data = { oper : oper, pk_id : pk_id};
+
+                    //$("#pnlAddEdit").block(blockStyleCSS);
+                    jQuery.extend(o_data, objTxt, objChk );
+
+                    $.ajax({
+                                    type: "POST",
+                                    url: url,
+                                    dataType: "json",
+                                    //async: false,
+                                    data:o_data,
+                                    success: function(data)
+                                    {                                    
+                                        thisClass.hdnID = data.id;
+                                        thisClass.clearBlock(oper,data.error);
+                                        thisClass.gridReload();
+                                        $('#pnlAddEdit').css('position', 'static');
+                                        if(oper=='add'){
+                                            if(grdCms_Roles_Detail!=undefined){                            
+                                                grdCms_Roles_Detail.loadData(thisClass.hdnID);
+                                            }
+                                            $('#r_select_roles_grid').show();
+                                        }
+                                        
+                                    },
+                                    error: function(response) {
+                                        thisClass.hdnID = '';
+                                        //$('#pnlAddEdit').unblock();
+                                        $('#pnlAddEdit').pnlAddEdit("close");
+                                        if(isExpire(response.responseText)) return;
+                                    }
+                    });
+                    
+                    return true;
+        }
+        
+        this.checkCallOutside = function(){
+                //reference Out Side
+            if(this.refOper=='edit')        
+                this.editAction(this.editID);
+            else if(this.refOper=='add')
+                $('#btnAdd{$variable_el}').click();
+            
+            this.refOper = 'default'; //clear;
+            return;
+        }
+        
+        this.jqGrid = function(){
+            thisClass.grid = jQuery(aInfo.grd).jqGrid({
+                url: this.setGrdParam(),
+                datatype: aInfo.datatype,
+                mtype: "POST",
+                colNames: aInfo.colN,
+                colModel: aInfo.colM,
+                rowNum:60,
+                rowList:[20,40,60],
+                //imgpath: gridimgpath,
+                pager: jQuery(aInfo.pgrd),
+                sortname: aInfo.initSortName,
+                viewrecords: true,
+                sortorder: "desc",
+                caption: aInfo.g_caption,
+                editurl: this.setGrdParam(),
+                width:$('#pnlGrid{$variable_el}').width()-5,
+                height:442, //250
+                rownumbers: true,
+                multiboxonly: true,
+                hoverrows:false,
+                loadBeforeSend: function(xhr){
+                    thisClass.setInputSize();
+                },
+                loadError : function(res,st,err) {
+                    if(isExpire(res.responseText)) return;
+                    thisClass.initialControl();
+                },
+                loadComplete : function(res) {
+                    //if(showError(res.rows)) return;
+
+                    if($(aInfo.grd).getGridParam('records')>0){
+                            var totals = $(aInfo.grd).getGridParam('records');
+                            var rowPerPage = $(aInfo.grd).getGridParam('rowNum');
+                            var page = $(aInfo.grd).getGridParam("page");
+                            if(totals > (rowPerPage*page)){
+                                $(aInfo.grd).setGridHeight('auto');
+                            }
+                            else {
+                                if(totals - (rowPerPage*(page-1) ) > 0){
+                                    $(aInfo.grd).setGridHeight('auto');
+                                }
+                                else
+                                    //$(aInfo.grd).setGridHeight(150);
+                                         $(aInfo.grd).setGridHeight('auto');
+                            }
+                    }
+                    else
+                    {
+                        //$(aInfo.grd).setGridHeight(150);
+                         $(aInfo.grd).setGridHeight('auto');
+                    }
+
+                    thisClass.setButtonUI('.btnAction');
+                    $('.activestatus').addClass('ui-corner-all');
+                    $('.activestatus').addClass('ui-state-hover');
+                    $('.activestatus').css('background', 'none');
+                    $('.activestatus').css('border', 'none');
+                    $('.activestatus').css('cursor', 'pointer');
+                    thisClass.initialControl();    
+                    return;
+                },
+                ondblClickRow:function(id){
+                    thisClass.editAction(id);
+                },
+                afterInsertRow: function(rowid, rowdata){                     
+                    $('#btnEdit{$variable_el}'+rowid).click(function(){                            
+                        thisClass.editAction(rowid);
+                    });
+                    $('#btnActive{$variable_el}'+rowid).click(function(){                            
+                        thisClass.editStatus('is_active', rowid);
+                    });
+                    $('#btnDelete{$variable_el}'+rowid).click(function(){                            
+                        thisClass.editStatus('is_delete', rowid);
+                    });
+                }
+            }).navGrid(aInfo.pgrd,{ refresh:true,search:false,del:false,edit:false, add:false, edittext:msg_edit, addtext:msg_add, deltext:msg_delete },
+            { editCaption: msg_editcaption,bSubmit: msg_submit, bCancel: msg_cancel, width: 370, height: 270, closeAfterEdit:false, reloadAfterSubmit:false },
+            { addCaption: msg_addcaption,bSubmit: msg_submit, bCancel: msg_cancel, width: 370, height: 270, closeAfterAdd:false,reloadAfterSubmit:false })
+            //$('#divGrid{$variable_el}').css('width',$('#gbox_'+aInfo.grd.replace(/#/g,"")).css('width'));
+        }
+        
+        this.excuteFN = function(ids){
+	    $(aInfo.grd).jqGrid('setGridParam', { postData:{ 'oper':'del', 'ids':ids } });
+	            $(aInfo.grd).trigger("reloadGrid");
+	    }
+            
+        this.initEvent = function(){
+            $("#btnClose{$variable_el}").click(function(){ thisClass.openPnlGrid('pnlGrid{$variable_el}') });
+	        $("#btnSave{$variable_el}").click(function() { 
+	            thisClass.initValidateFormEvent(formId);
+	            if (thisClass.submitForm){
+	        		thisClass.saveData();
+	    		} 
+	    	});
+	
+	        $("#btnSaveBack{$variable_el}").click(function() {
+	            thisClass.initValidateFormEvent(formId);
+	            if (thisClass.submitForm){
+	                if (thisClass.saveData()){
+	                    thisClass.openPnlGrid('pnlGrid{$variable_el}');
+	                    thisClass.submitForm = false;
+	                }
+	            }
+	        });
+
+            $(".btn-slide").click(function(){
+                $("#opt1{$variable_el}").slideToggle("slow");
+                $('#icon-slide{$variable_el}').toggleClass("ui-icon-circle-arrow-n"); 
+                return false;
+            });
+
+            $('#btnDelete{$variable_el}').click(function(){
+                var ids = jQuery(aInfo.grd).getGridParam('selarrrow');
+                if(ids.length == 0){
+                    showMessage('{$smarty.const.MSG_NOT_SELECT}', true);
+                    return;
+                }
+                thisClass.confirmDlg(msg_delconfirm, msg_delcaption, ids);
+            });
+
+            $('#btnAdd{$variable_el}').click(function(){
+                if(thisClass.isDetail==false){
+                    thisClass.popContainAddEdit('add');
+                    $('#masterDetail').hide();
+                }else{
+                    window.location.href = aInfo.classname.toLowerCase() + '?editID=';
+                }
+            });
+            
+            $('#btnSearch{$variable_el}').click(function(){ thisClass.gridReload() });
+            $('#keyword{$variable_el}').keyup(function(){ thisClass.doSearch() });     
+             
+            this.setButtonUI('.btndiv');
+            thisClass.jqGrid();
+            thisClass.initValidateForm(formId, rule);
+            if(!thisClass.isDetail)
+                thisClass.gridReload();
+
+            $(window).resize(this.fitTable);
+            this.fitTable();
+        }
+        this.initEvent();
+ }
+ 
+var grd{$variable_el}
+jQuery(document).ready(function(){
+    grd{$variable_el} = new MGMT{$variable_el}({$aInfo});    
+});
+
+</script>
+

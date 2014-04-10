@@ -1,0 +1,777 @@
+{include file="grid-wrapper.inc.html"}
+{include file="dynatree.inc.html"}
+<script  type="text/javascript">
+    MGMT{$variable_el}.prototype = new GridBase();
+    function MGMT{$variable_el}(aInfo){
+
+        this.constructor(aInfo);
+        this.grid;
+        var thisClass = this;
+        this.hideMid = [];
+        this.hideLarge = [];
+        this.objShipCompany = {};
+        this.dynatreeValue;
+        thisClass.limitPage = 5;
+        var formId = "#frm{$variable_el}";
+        var rule = {
+            txt_price:{
+                required: true,
+                number: true
+            },
+            txt_weight:{
+                required: true,
+                number: true
+            },
+            txt_barcode_check:{
+                required: true,
+            },
+            select_menu3: {
+                required: true
+            },
+        };
+        
+        this.dataSearch = function()
+        {
+            var product_query = $("#filter_product_query").val();
+            var menuSelect = thisClass.dynatreeValue;
+            var keyword = $(".search-query").val();
+            var period_start = $("#period_start").val();
+            var period_end = $("#period_end").val();
+            var oData = { q:aInfo.classname,
+                    oper:"search",
+                    period_start: period_start,
+                    period_end: period_end,
+                    product_query: product_query,
+                    menu: menuSelect,
+                    noderoot: thisClass.dynatreeSelectRoot,
+                    keyword: keyword
+            };
+            jQuery.extend(oData, this.optSearch);
+                //$(aInfo.grd).setPostData(oData);
+            $(aInfo.grd).jqGrid('setGridParam', { postData: null });
+            $(aInfo.grd).jqGrid('setGridParam', { mtype: 'POST', postData:oData });
+                    //clear param
+                    //$(aInfo.grd).jqGrid().setGridParam({ url : 'processajax.php?q=' + aInfo.classname +'&nd='+new Date().getTime()+'&fileclass='+ aInfo.fileclass })
+        }
+
+        this.saveData = function()
+        {
+            var url = $(aInfo.grd).getGridParam('url');
+            var pk_id = this.hdnID;
+            var objTxt = this.getTxt();
+            var objChk = this.getChk();
+            var objSel = this.getSelect();
+            var oper;
+
+            if ($.trim(pk_id) != ''){
+                oper = 'edit';
+            } else{
+                oper = 'add';
+            }
+
+            //form
+            if($("#upload_file").val() !== ''){
+                $("#frm{$variable_el}").attr('action', url+"&oper=uploadImage").submit();
+                $("#upload_file").val('');
+            }
+
+            var o_data = { oper : oper, pk_id : pk_id};
+            //$("#pnlAddEdit").block(blockStyleCSS);
+            jQuery.extend(o_data, objTxt, objChk, objSel);
+            $.ajax({
+            type: "POST",
+                    url: url,
+                    dataType: "json",
+                    //async: false,
+                    data:o_data,
+                    success: function(data)
+                    {
+                    thisClass.hdnID = data.id;
+                            thisClass.clearBlock(oper, data.error);
+                            thisClass.gridReload();
+                            $('#pnlAddEdit').css('position', 'static');
+                            
+                    },
+                    error: function(response) {
+                    thisClass.hdnID = '';
+                            //$('#pnlAddEdit').unblock();
+                            $('#pnlAddEdit').pnlAddEdit("close");
+                            if (isExpire(response.responseText)) return;
+                    }
+            });
+            return true;
+            //}else return false
+    }
+
+    this.checkBarcode = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+            $.getJSON( url, { oper : 'checkBarcode',
+                                barcode: $("#txt_barcode").val(),
+                                id : this.hdnID},
+                function(result){
+                    $("#txt_barcode_check").attr("checked",result.check);
+                    return result.check;
+            });
+    }
+
+    this.excuteFN = function(ids){
+    $(aInfo.grd).jqGrid('setGridParam', { postData:{ 'oper':'del', 'ids':ids } });
+            $(aInfo.grd).trigger("reloadGrid");
+    }
+
+    this.jqGrid = function(){
+    thisClass.grid = jQuery(aInfo.grd).jqGrid({
+    		url: this.setGrdParam(),
+            datatype: 'json',
+            colNames: aInfo.colN,
+            colModel: aInfo.colM,
+            rowNum:60,
+            rowList:[60, 120, 180, 200],
+            pager: jQuery(aInfo.pgrd),
+            sortname: aInfo.initSortName,
+            viewrecords: true,
+            sortorder: "asc",
+            caption: aInfo.g_caption,
+            editurl: this.setGrdParam(),
+            width:$('.pnlContainer').width(),
+            height:'auto',
+            rownumbers: true,
+            multiboxonly: true,
+            hoverrows:false,
+            loadBeforeSend: function(xhr){
+                thisClass.setInputSize();
+            },
+            loadError : function(res, st, err) {
+            if (isExpire(res.responseText)) return;
+                    thisClass.initialControl();
+            },
+            loadComplete : function(res) {
+
+                if ($(aInfo.grd).getGridParam('records') > 0){
+                    var totals = $(aInfo.grd).getGridParam('records');
+                    var rowPerPage = $(aInfo.grd).getGridParam('rowNum');
+                    var page = $(aInfo.grd).getGridParam("page");
+                    if (totals > (rowPerPage * page)){
+                        $(aInfo.grd).setGridHeight('auto');
+                    }
+                    else {
+                        if (totals - (rowPerPage * (page - 1)) > 0){
+                        $(aInfo.grd).setGridHeight('auto');
+                        }
+                        else
+                                $(aInfo.grd).setGridHeight('auto');
+                        }
+                }
+                else
+                {
+                $(aInfo.grd).setGridHeight('auto');
+                }
+
+                thisClass.setButtonUI('.btnAction');
+                $('.activestatus').addClass('ui-corner-all');
+                $('.activestatus').addClass('ui-state-hover');
+                $('.activestatus').css('background', 'none');
+                $('.activestatus').css('border', 'none');
+                $('.activestatus').css('cursor', 'pointer');
+
+                thisClass.editData = false;
+                thisClass.initialControl();
+                return;
+            },
+            ondblClickRow:function(id){
+            thisClass.editAction(id);
+            },
+            afterInsertRow: function(rowid, rowdata){
+            $('#btnEdit{$variable_el}' + rowid).click(function(){
+            thisClass.editAction(rowid);
+            });
+                    $('#btnActive{$variable_el}' + rowid).click(function(){
+            thisClass.editStatus('is_active', rowid);
+            });
+                    $('#btnDelete{$variable_el}' + rowid).click(function(){
+            thisClass.editStatus('is_delete', rowid);
+            });
+            }
+    });
+    }
+
+    this.editAction = function(id){
+        if (this.isDetail == false){
+            var ret = $(aInfo.grd).getRowData(id);
+            this.popContainAddEdit('edit', id, ret.group_name);
+        } else{
+            window.location.href = aInfo.classname.replace(/_/g, '-').toLowerCase() + '?editID=' + id;
+        }
+    }
+
+
+    this.popContainAddEdit = function (oper, pk_id, title){
+            this.blockUI();
+            this.closePnlGrid('pnlGrid{$variable_el}');
+            this.hdnID = '';
+            if (title == undefined)
+            title = '';
+            this.clearChk();
+            this.clearTxt();
+            if (oper == 'edit'){
+                this.hdnID = pk_id;
+                $("#masterDetail").show();
+            } else{
+
+            }
+            thisClass.resetValidatForm(formId);
+            this.loadData();
+            $('.noBreadcrumb .label').text(this.breadCrumbLabel + ' - ' + title);
+    }
+
+    this.loadData = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+        thisClass.checkBarcode();
+        $.ajax({
+        type: "POST",
+                url: url,
+                dataType: "json",
+                data:{ pk_id:thisClass.hdnID, oper:'loadData' },
+                success: function(data){
+                    $('#upload_file').val('');
+                    if(data.menu1 == undefined){
+                        thisClass.getMenuStep2("select_menu2", $("#select_menu1").val());
+                        //thisClass.getMenuStep2("select_menu3", $("#select_menu2").val());
+                    }else{
+                        thisClass.getMenuStep2("select_menu2", data.menu1);
+                        thisClass.getMenuStep2("select_menu3", data.menu2);
+                    }
+                    thisClass.bindTxt(data);
+                    thisClass.bindChk(data);
+                    thisClass.bindSelect(data);
+                    thisClass.bindImg(data);
+
+                    thisClass.checkBarcode();
+                    thisClass.menuEvent();
+                    thisClass.unblockUI();
+
+                    thisClass.editData = true;
+                },
+                error: function(response) {
+                if (isExpire(response.responseText)) return;
+                }
+        });
+    }
+    
+    this.menuEvent = function(){
+        $("#select_menu1").change(function(){
+            thisClass.getMenuStep2("select_menu2",$(this).val());
+            $("#select_menu3 option").remove();
+        });
+        
+        $("#select_menu2").change(function(){
+            thisClass.getMenuStep2("select_menu3",$(this).val());
+        });
+    }
+    
+    this.getMenuStep1 = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+        var option = '';
+        $.getJSON( url, { oper : 'getMenuStep1' },
+            function(result){
+                $.each(result.rows, function(ini, val){
+                    option += '<option value="' + val.id + '">' + val.name + '</option>';
+                });
+                $("#select_menu1").append(option);
+                   
+            });
+    }
+    
+    this.getMenuStep2 = function(id , step_id1){
+        var url = $(aInfo.grd).getGridParam('url');
+        var option = '';
+        $.ajax({
+                type: "POST",
+                url: url,
+                dataType: "json",
+                async: false,
+                data:{ oper : 'getMenuStep2',
+                'step': step_id1},
+                success: function(result)
+                {
+                    $.each(result.rows, function(ini, val){
+                        option += '<option value="' + val.id + '">' + val.name + '</option>';
+                    });
+                    $("#"+id+" option").remove();
+                    $("#"+id).append(option);
+                }
+        });
+    }
+
+    this.getProductQuery = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+        var option = '';
+        $.getJSON( url, { oper : 'getProductQuery' },
+            function(result){
+                if(result !== null){
+                    $.each(result.rows, function(ini, val){
+                        option += '<option value="' + val.name + '">' + val.description + '</option>';
+                    });
+                    $("#filter_product_query option").remove();
+                    $("#filter_product_query").append(option);
+                }
+            });
+    }
+
+    this.getUnit = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+        var option = '';
+        $.getJSON( url, { oper : 'getUnit'},
+            function(result){
+                thisClass.unit = result.rows;
+                $.each(result.rows, function(ini, val){
+                    option += '<option value="' + val.id + '">' + val.name + '</option>';
+                });
+                $("#select_unit option").remove();
+                $("#select_unit").append(option);
+                   
+            });
+    }
+
+    this.dynatreeEvent = function(is_grid_reload){
+        //dynatree
+        var url = $(aInfo.grd).getGridParam('url');
+        var tree = "#tree";
+        var dyn = new DYNATREE(tree);
+        var isDown = false;
+        var isClick = false;
+        var isClose = false;
+        var passEvent;
+        var beforeChange;
+        var afterChange;
+        
+        dyn.msgContentCatDefault = "Please Select";
+        var content_category_block_html = '<div id="{$variable_el}blockContent" class="ui-multiselect-menu ui-widget ui-widget-content ui-corner-all" style="width: 300px; display: none;">';
+        content_category_block_html += '<div class="ui-widget-header ui-corner-all ui-multiselect-header ui-helper-clearfix ui-multiselect-hasfilter">';
+        content_category_block_html += '<div class="ui-multiselect-filter">Filter:<input id="{$variable_el}dynKeywords" placeholder="Enter keywords"></div>';
+        content_category_block_html += '<ul class="ui-helper-reset"><li><a class="ui-multiselect-all {$variable_el}dynatree_check_all" href="#"><span class="ui-icon ui-icon-check"></span><span>All</span></a></li><li><a class="ui-multiselect-none {$variable_el}dynatree_uncheck_all" href="#"><span class="ui-icon ui-icon-closethick"></span><span>None</span></a></li><li class="ui-multiselect-close"><a class="ui-multiselect-close" href="#"><span class="ui-icon ui-icon-circle-close {$variable_el}dynatree_close"></span></a></li></ul>';
+        content_category_block_html += '</div>';
+        content_category_block_html += '<ul class="ui-multiselect-checkboxes ui-helper-reset" style="height: 280px;"><div id="tree"></div></ul>';
+        content_category_block_html += '</div>';
+        
+        $("body").append(content_category_block_html);
+
+        $("#{$variable_el}blockContent").css({ 'top': $("#filter_menu_product").offset().top + $("#filter_menu_product").height() + 6, 'left': $("#filter_menu_product").offset().left });
+
+        $("#filter_menu_product").click(function(){
+            if (!isClick){
+                $(this).toggleClass('ui-state-active');
+                $("#{$variable_el}blockContent").toggle();
+            }
+        }).mousedown(function(){
+            if ($(this).hasClass('ui-state-active')){
+                isDown = false;
+            } else{
+                isDown = true;
+            }
+        });
+
+        $("#{$variable_el}blockContent").mousedown(function(){
+            isDown = true;
+            if (isClose){
+                isDown = false;
+                isClose = false;
+            }
+        });
+
+        $(document).mousedown(function(){
+            if (!isDown){
+                if ($("#filter_menu_product").hasClass("ui-state-active")){
+                    $("#filter_menu_product").removeClass("ui-state-active");
+                    $("#{$variable_el}blockContent").hide();
+                    isClick = true;
+                    thisClass.dynatreeValue = dyn.valSelect;
+                    thisClass.dynatreeSelectRoot = dyn.msgSelectRoot;
+                    thisClass.gridReload();
+                    thisClass.pageSelect = 1;
+                    thisClass.getProduct();
+                }
+
+            } else{
+                    isClick = false;
+                    isDown = false;
+            }
+
+        });
+
+        dyn.loadData(tree, url);
+        
+    }
+    
+    this.getProduct = function(){
+    	var url = $(aInfo.grd).getGridParam('url');
+    	var html = '';
+    	var image,name_en,name_th,volumn,unit,weight,stock;
+    	
+    	if(thisClass.pageSelect == undefined){
+    		thisClass.pageSelect = 1;
+    	}
+    	
+        var product_query = $("#filter_product_query").val();
+        var menuSelect = thisClass.dynatreeValue;
+        var keyword = $(".search-query").val();
+
+        $.getJSON( url, { q:aInfo.classname,
+        	oper : 'getProduct',
+        	product_query: product_query,
+                menu: menuSelect,
+                keyword: keyword,
+        	page : thisClass.pageSelect 
+        	},
+            function(result){
+            	thisClass.pagerNumber = result.page;
+            	thisClass.getPager();
+                if(result.rows !== undefined){
+	            	 $.each(result.rows, function(ini, val){
+                                name_en = val.name_en;
+                                name_th = val.name_th;
+                                volumn = val.volumn;
+                                weight = val.weight;
+                                stock = val.stock;
+                                if(val.name_en == null)
+                                    name_en = '';
+                                if(val.name_th == null)
+                                    name_th = '';
+                                if(val.volumn == null)
+                                    volumn = '';
+                                if(val.weight == null)
+                                    weight = 0;
+                                if(val.stock == null)
+                                    stock = 0;
+	            		if(val.image == '' || val.image == null)
+                                    image = aInfo.img_prefix+'no_image.jpg';
+	            		else
+                                    image = aInfo.img_l_prefix+val.image;
+	            		 
+	            		var productName = val.name+" "+volumn+" "+unit;
+
+                                if(ini%4 == 0){
+                                    html += '<ul class="thumbnails">';
+                                }
+	            		html += '<li class="span3">';
+	            		html += '<div class="thumbnail thumbnail_category">';
+	            		html += '<img alt="'+val.name+'" data-toggle="modal" data-target="#imageProductModal" class="imageProductQuery" date-image="'+image+'" data-id="'+val.pid+'" style="width: 300px; height: 200px;" src="'+image+'">';
+	            		html += '<div class="caption">';
+                                html += '<h4><span class="product_name" data-id="'+val.pid+'">'+val.name+'</span></h4>';
+                                html += '<p><div class="controls controls-row">';
+                                html += '<b>{$smarty.const.MSG_BARCODE}</b><input class="pdint_barcode productQueryInput span12" data-id="'+val.pid+'" value="'+val.barcode+'"/>';
+                                html += '</div></p>';
+                                html += '<p><div class="controls controls-row">';
+                                html += '<b>{$smarty.const.MSG_PRODUCT_NAME_EN}</b><input class="pdint_name_en productQueryInput span12" data-id="'+val.pid+'" value="'+name_en+'"/>';
+                                html += '</div></p>';
+                                html += '<p><div class="controls controls-row">';
+                                html += '<b>{$smarty.const.MSG_PRODUCT_NAME_TH}</b><input class="pdint_name_th productQueryInput span12" data-id="'+val.pid+'" value="'+name_th+'"/>';
+                                html += '</div></p>';
+                                html += '<p><div class="controls controls-row">';
+                                html += '<span class="span4">{$smarty.const.MSG_VOLUMN}</span><input class="pdint_volumn productQueryInput span4" data-id="'+val.pid+'" value="'+volumn+'"/>';
+                                html += '</div></p>';
+                                html += '<p><div class="controls controls-row">';
+                                html += '<span class="span4">{$smarty.const.MSG_UNIT}</span><select class="pdint_unit productQueryInput span5" data-id="'+val.pid+'" name="select_unit">'+thisClass.selectUnit(val.unit)+'</select>';
+                                html += '</div></p>';
+                                html += '<p><div class="controls controls-row">';
+                                html += '<span class="span4">{$smarty.const.MSG_PRICE}</span><input class="pdint_price productQueryInput span4" data-id="'+val.pid+'" value="'+val.price+'"/>';
+                                html += '</div></p>';
+                                html += '<p><div class="controls controls-row">';
+                                html += '<span class="span4">{$smarty.const.MSG_WEIGHT}</span><input class="pdint_weight productQueryInput span4" data-id="'+val.pid+'" value="'+weight+'"/>';
+                                html += '</div></p>';
+                                html += '<p><div class="controls controls-row">';
+                                html += '<span class="span4">{$smarty.const.MSG_STOCK}</span><input class="pdint_stock productQueryInput span4" data-id="'+val.pid+'" value="'+stock+'"/>';
+                                html += '</div></p>';
+                                html += '<button class="btn btn-primary pdint_save" data-id="'+val.pid+'">{$smarty.const.STR_SAVE}</button>';
+	            		html += '</div>';
+	            		html += '</div>';
+	            		html += '</li>';
+                                if(ini%4 == 3 || result.rows.length == ini+1){
+                                    html += '</ul>';
+                                }
+	            		});
+                }
+				$("#productQuery").html(html);
+				thisClass.equalHeight();
+
+                                //product event
+                                thisClass.productQueryEvent();
+	             });
+
+				// thisClass.equalHeight();
+// 				
+			
+
+    }
+    
+    this.getPager = function(){
+    	var startpage,endpage;
+    	var len = thisClass.pagerNumber;
+    	var html = '';
+    	var htmlMini = '';
+    	
+		if(thisClass.pageSelect > 1){
+			html += '<li><a class="pagerNumber" data-number="prev" href="#page">&laquo;</a></li>';
+			htmlMini += '<li class="previous"><a class="pagerNumber" data-number="prev" href="#page">&larr; Older</a></li>';
+		}
+
+    	
+    	if(thisClass.pagerNumber > thisClass.limitPage){
+			if(thisClass.pagerNumber > (thisClass.pageSelect + thisClass.limitPage -1)){
+				startpage = thisClass.pageSelect;
+				endpage = thisClass.pageSelect + thisClass.limitPage -1;
+			}else if(thisClass.pagerNumber <= (thisClass.pageSelect + thisClass.limitPage -1)){
+				startpage = thisClass.pagerNumber - thisClass.limitPage+1;
+				endpage = thisClass.pagerNumber;
+			}
+		}else if(thisClass.pagerNumber == thisClass.limitPage){
+			startpage = 1;
+			endpage = thisClass.limitPage;
+		}else if(thisClass.pagerNumber < thisClass.limitPage){
+			startpage = 1;
+			endpage = thisClass.pagerNumber;
+		}
+    	
+        for (var i=startpage;i<=endpage;i++)
+        {
+        	html += '<li data-id="'+i+'"><a class="pagerNumber" data-number="'+i+'" href="#page">'+i+'</a></li>'
+        }
+        
+    	if(thisClass.pageSelect < thisClass.pagerNumber){
+    		html += '<li><a class="pagerNumber" data-number="next" href="#page">&raquo;</a></li>';
+    		htmlMini += '<li class="next"><a class="pagerNumber" data-number="next" href="#page">Next &rarr;</a></li>';
+    	}
+        
+        $(".pagerProduct").html(html);
+        $(".pagerProductMini").html(htmlMini);
+        
+        $(".pagerProduct li[data-id='"+thisClass.pageSelect+"']").addClass('active');
+        
+		thisClass.pagerEvent();
+    	
+    }
+    
+    this.pagerEvent = function(){
+        //page event
+        $(".pagerNumber").click(function(){
+        	var number = $(this).data('number');
+        	if(number == 'prev'){
+        		thisClass.pageSelect = thisClass.pageSelect-1;
+        	}else if(number == 'next'){
+        		thisClass.pageSelect = thisClass.pageSelect+1;
+        	}else{
+        		thisClass.pageSelect = number;	
+        	}
+        	thisClass.getProduct();
+        	return false;
+        });
+    }
+    
+    this.equalHeight = function() {    
+	    var tallest = 0;    
+	    $(".thumbnail_category").each(function() {
+	        thisHeight = $(this).height();       
+	        if(thisHeight > tallest) {          
+	            tallest = thisHeight;       
+	        }    
+	    });    
+	    $(".thumbnail_category").each(function() { $(this).height(tallest); });
+    }
+
+    this.selectUnit = function(unit) {
+        var option = '';
+        $.each(thisClass.unit, function(ini, val){
+            if(unit == val.id){
+                option += '<option value="' + val.id + '" selected>' + val.name + '</option>';
+            }else{
+                option += '<option value="' + val.id + '">' + val.name + '</option>';
+            }
+        });
+        return option;
+    }
+
+    this.productQueryEvent = function(){
+        $(".productQueryInput").focus(function(){
+            var id = $(this).attr('data-id');
+            $(".pdint_save[data-id='"+id+"']").removeAttr("disabled");
+        });
+
+        $(".pdint_save").click(function(){
+                var url = $(aInfo.grd).getGridParam('url');
+                var id = $(this).attr('data-id');
+                var barcode = $(".pdint_barcode[data-id='"+id+"']").val();
+                var name_en = $(".pdint_name_en[data-id='"+id+"']").val();
+                var name_th = $(".pdint_name_th[data-id='"+id+"']").val();
+                var volumn = $(".pdint_volumn[data-id='"+id+"']").val();
+                var unit = $(".pdint_unit[data-id='"+id+"']").val();
+                var price = $(".pdint_price[data-id='"+id+"']").val();
+                var weight = $(".pdint_weight[data-id='"+id+"']").val();
+                var stock = $(".pdint_stock[data-id='"+id+"']").val();
+
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    dataType: "json",
+                    data:{
+                        oper : 'edit',
+                        id : id,
+                        barcode : barcode,
+                        name_en : name_en,
+                        name_th : name_th,
+                        volumn : volumn,
+                        unit : unit,
+                        unit : unit,
+                        price : price,
+                        stock : stock
+                    },
+                    success: function(data)
+                    {
+                        thisClass.getProduct();
+                        thisClass.gridReload();
+                    }
+                });
+                return false;
+        }).attr("disabled", "disabled");
+    }
+
+    this.exportPdf = function(){
+        var product_query = $("#filter_product_query").val();
+        var keyword = $(".search-query").val();
+        window.open('./export/'+ aInfo.classname.replace(/_/g,'-').toLowerCase() + '.php?product_query='+product_query+"&keyword="+keyword+"&type=pdf",'_newtab' );
+        window.focus();
+    }
+
+    this.exportExcel = function(){
+        var product_query = $("#filter_product_query").val();
+        var keyword = $(".search-query").val();
+        location.href = './export/'+ aInfo.classname.replace(/_/g,'-').toLowerCase() + '.php?product_query='+product_query+"&keyword="+keyword+"&type=excel";
+    }
+
+    this.initEvent = function(){
+        thisClass.ctrlSave(formId, 'pnlGrid{$variable_el}');
+
+        $("#btnPdf{$variable_el}").click(function() {
+            thisClass.exportPdf();
+        });
+
+        $("#btnExcel{$variable_el}").click(function() {
+            thisClass.exportExcel();
+        });
+
+            $("#btnClose{$variable_el}").click(function(){
+                thisClass.openPnlGrid('pnlGrid{$variable_el}');
+            });
+
+            $("#btnSave{$variable_el}").click(function() {
+                thisClass.initValidateFormEvent(formId);
+                if (thisClass.submitForm){
+                        thisClass.saveData();
+                }
+            });
+
+            $("#btnSaveBack{$variable_el}").click(function() {
+                thisClass.initValidateFormEvent(formId);
+                if (thisClass.submitForm){
+                    if (thisClass.saveData()){
+                        thisClass.openPnlGrid('pnlGrid{$variable_el}');
+                        thisClass.submitForm = false;
+                    }
+                }
+            });
+
+            $('#btnDelete{$variable_el}').click(function(){
+                var ids = jQuery(aInfo.grd).getGridParam('selarrrow');
+                if (ids.length == 0){
+                    showMessage('{$smarty.const.MSG_NOT_SELECT}', true);
+                    return;
+                }
+                thisClass.confirmDlg(msg_delconfirm, msg_delcaption, ids);
+            });
+
+            $('#btnAdd{$variable_el}').click(function(){
+                if (thisClass.isDetail == false){
+                    thisClass.popContainAddEdit('add');
+                    $('#masterDetail').hide();
+                } else{
+                    window.location.href = aInfo.classname.toLowerCase() + '?editID=';
+                }
+            });
+
+            $("#btnSubmitUpload").click(function(){
+                $("#upload_image").submit();
+            });
+
+            $("#filter_product_query").change(function(){
+                thisClass.gridReload();
+                thisClass.pageSelect = 1;
+                thisClass.getProduct();
+            });
+            /*
+            $("#upload_target").load(function(){
+               thisClass.editAction($("#txt_id").val());
+            });
+            */
+        
+            $('.navbar-search[name="{$variable_el}"]').submit(function(){
+                $("#filter_product_query").val("ALL");
+                $("#tree").dynatree("getRoot").visit(function(node){
+                    node.select(false);
+                });
+                thisClass.gridReload(); 
+                thisClass.getProduct();
+                return false; 
+            });
+
+            $('#txt_barcode_check').click(function(e) {
+                $(this).attr("checked", !$(this).attr("checked"));
+            });
+
+            $('#txt_barcode').keyup(function() {
+                if($(this).val().length > 3){
+                    thisClass.checkBarcode();
+                }else{
+                    $('#txt_barcode_check').attr("checked", false);
+                }
+            });
+            
+            $('#filter_category_type').change(function() {
+				var val = $(this).val();
+				if(val == "grid"){
+					$("#divGrid{$variable_el}").show();
+					$("#pdQuery").hide();
+				}else if(val == "category"){
+					$("#divGrid{$variable_el}").hide();
+					$("#pdQuery").show();
+                                        thisClass.pageSelect = 1;
+					thisClass.getProduct();
+				}
+            });
+            
+             $('#txt_expire').datepicker({
+	                //numberOfMonths: 3,
+	                changeMonth: true,
+	                changeYear: true,
+	                //showButtonPanel: true,
+	                dateFormat: 'dd mm yy'
+	        }).val('');
+            
+            $("#pdQuery").hide();
+            this.setButtonUI('.btndiv');
+            thisClass.jqGrid();
+            thisClass.initValidateForm(formId, rule);
+            thisClass.dynatreeEvent(true); 
+            thisClass.getMenuStep1();
+            thisClass.getProductQuery();
+            thisClass.getUnit(); 
+            $(window).resize(this.fitTable);
+            this.fitTable();
+        }
+
+        thisClass.initEvent();
+    }
+
+    var grd{$variable_el}
+    jQuery(document).ready(function(){
+        grd{$variable_el} = new MGMT{$variable_el}({$aInfo});
+    });
+</script>

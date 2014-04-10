@@ -1,0 +1,122 @@
+<style>
+    .cancel_doc{
+        padding: 0px;
+        margin: 0px;
+    }
+</style>
+
+<table cellpadding="0"  cellspacing="0" summary="" border="0">
+
+            {foreach item=document from=$Document name=foo}
+             <tr {if $smarty.foreach.foo.index % 2 == 0}
+                      class="even"
+                    {else}
+                      class="odd"
+                    {/if}>
+                {foreach item=column from=$Column name=cFoo}
+                    {foreach item=item from=$document key=key }
+                        {if $column.column_name==$key}
+                             <td {if $column.align} align='{$column.align}' {else} align="left" {/if} style="padding:4px 8px 4px;width:{$column.width}px;" >
+                                {$item}                                    
+                             </td>
+                             {break}
+                        {/if}
+                    {/foreach}
+                    {if $smarty.foreach.cFoo.last}
+                        <td>&nbsp;</td>
+                    {/if}
+                {/foreach}
+              </tr>
+            {/foreach}
+  </table>
+
+                    <script  type="text/javascript">
+                       
+                        aDocName = [];
+                                                
+                        jQuery(document).ready(function(){ 
+                                    $("#tbDocument").find("tr:gt(0)").remove();
+                                    $('.edit_doc').button();
+                                    $('#tbContent .ui-button-text').css('padding','0.2em 1em');
+                                    $('#tbContent .ui-button-text').css('font-size','9px');
+
+
+                                   $('.adddocument').die('click');                       
+                                   $('.adddocument').live('click',function(){
+                                        var count = countObj(aDocName);
+
+                                        var token_variable = 'add' + count
+                                        while(objKeyExist(aDocName, token_variable)){
+                                            count++;
+                                            token_variable = 'add' + count
+                                        }
+
+                                        aDocName[token_variable] = { 'complete':false };
+                                         var insertRow = '<tr>'+    
+                                                '<td align="left" style="width:150px;" class="sortDown">' +    
+                                                 '<select id="doctype_'+token_variable+'" style="width:110px;">' + $('.add_doctype_id_tmp').html() + '</select>' +
+                                                 '</td>' +   
+                                                 '<td align="left" style="width:220px;" >'+  
+
+                                                 '<div>'
+                                                +'<img style="display:none;" src="" alt="image" id="i_'+token_variable+'"/><div id="div_'+token_variable+'" style="width: 120px;">'
+                                                +'<input id="f_'+token_variable+'" name="f_'+token_variable+'"  type="file" size="15" class="input"></div>'
+                                                +'</div>'+
+
+                                                 '</td>'+  
+                                                 '<td align="center" style="width:150px;"  >'+  
+                                                 '<div type="button" class="cancel_doc" id="'+token_variable+'" >Cancel Add</div>' +
+                                                 '</td>'+  
+                                                 '<td>&nbsp;</td>' +  
+                                         '</tr> ';
+
+                                         $("#tbDocument tr:last").after(insertRow);			
+
+                                         $('.cancel_doc').button();
+                                         $('#tbDocument .ui-button-text').css('padding','0.2em 1em');
+                                         $('.ui-button-text').css('font-size','9px');
+                                    }); 
+
+                                    $('#tbDocument .cancel_doc').die('click');
+                                    $('#tbDocument .cancel_doc').live('click',function(){
+                                            aDocName = removeObj(aDocName, $(this).attr('id'));
+                                            $(this).parent().parent().remove();
+                                    });
+                                    
+                                    $('#tbContent .btn_edit_doc').die('click');
+                                    $('#tbContent .btn_edit_doc').live('click',function(){                                        
+                                         var doc_id = $(this).attr('id').replace ( /[^\d.]/g, '' );  
+                                         aDocName[$(this).attr('id')] = { 'complete':false };
+                                         
+                                         $('#doctype_span'+doc_id).hide();
+                                         $('#file_name_span'+doc_id).hide();
+                                         $('#edit'+doc_id).hide();
+                                         $('#delete_edit_doc'+doc_id).hide();
+                                         
+                                         $('#doctype_edit'+doc_id).show();
+                                         $('#wrapper_edit_file_name'+doc_id).show();
+                                         $('#cancel_edit_doc'+doc_id).show();
+                                         
+                                            $('#cancel_edit_doc'+doc_id).die('click');
+                                            $('#cancel_edit_doc'+doc_id).live('click',function(){
+                                                var doc_id = $(this).attr('id').replace ( /[^\d.]/g, '' );
+                                                 aDocName = removeObj(aDocName, "edit"+doc_id);
+                                                 $('#doctype_span'+doc_id).show();
+                                                 $('#file_name_span'+doc_id).show();
+                                                 $('#edit'+doc_id).show();
+                                                 $('#delete_edit_doc'+doc_id).show();
+
+                                                 $('#doctype_edit'+doc_id).hide();
+                                                 $('#wrapper_edit_file_name'+doc_id).hide();
+                                                 $('#cancel_edit_doc'+doc_id).hide();                                   
+                                            });
+                                    });  
+                                    
+                                    $('#tbContent .btn_delete_doc').die('click');
+                                    $('#tbContent .btn_delete_doc').live('click',function(){                                        
+                                         var doc_id = $(this).attr('id').replace ( /[^\d.]/g, '' );  
+                                         confirmDlg(msg_delconfirm, msg_delcaption, doc_id);
+                                    });                                                                
+                                    
+                            });
+                    </script>

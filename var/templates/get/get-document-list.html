@@ -1,0 +1,172 @@
+<style type="text/css" media="screen">
+    #sortColumn.ui-widget-header, 
+    #doc_action.ui-widget-header, 
+    #doc_title.ui-widget-header{
+        border: 0px none;
+        background:none;
+    }
+  </style>
+<input type="hidden" name="hdddirection" id="hdddirection" value="{$orderdirection}" />
+<input type="hidden" name="hddSortName" id="hddSortName" value="{$sortname}" />
+
+
+<div class="tableHeader">   
+                 <ul class="tableActions">
+                    <li>
+                        <strong id="doc_title" class="ui-widget-header">{$smarty.const.MSG_DOCUMENT}</strong>
+                    </li>
+                    <li style="width: 430px;text-align: right;" >
+                        <div class="btndiv adddocument" style="width:55px;height:18px;text-align:left;padding-left:2px;margin-bottom:0px;float: right;cursor: pointer"><span class="ui-icon ui-icon-circle-plus" style="float:left;  margin-top: 4px;"></span>&nbsp;{$smarty.const.MSG_ADD}</div>
+                    </li>
+                </ul>        
+        <div class="clear"></div>
+        <div class="corner left"></div>
+        <div class="corner right"></div>
+        
+    </div>
+
+    <table id="tbDocument" cellspacing="0" summary="" border="0">    
+            <tr>    
+                {foreach item=i from=$Column}
+                    <th class="{if $i.sortable}{if $i.column_name==$sortname}{$classSort}{else}sortUp{/if}{/if}" style="width:{$i.width}px;" {if $i.align} align='{$i.align}' {else} align="left" {/if} >
+                        {if $i.sortable} <a id="sortColumn" class="ui-widget-header sortColumn"  href="javascript:sortColumn('{$i.column_name}','{$orderdirection}');" >{$i.label}</a> 
+                        {else}
+                        <span id="doc_action" class="ui-widget-header">{$i.label}</span>
+                        {/if}
+                    </th>
+                {/foreach}
+                <th>&nbsp;</th>
+            </tr>    
+    </table>
+<div id="tbContent">
+        {include file="get/get-document-content.html"}
+</div>
+{if $total_pages>1} <div id="pager" style="height:26px;width:80%"></div>{else}&nbsp; {/if}
+
+<select class="add_doctype_id_tmp" style="width: 150px;font-size:9pt;float:left;height: 22px;display:none;">
+{html_options options=$addDocTypeOptions}
+</select>
+
+<script  type="text/javascript">
+ var current_page=1;
+ var total_pages={$total_pages};
+ var display={$display};
+ var rows={$rows};
+ var owner_doc_type='{$owner_doc_type}';
+ var ref_data_type='{$ref_data_type}';
+ var ref_pk_id={$ref_pk_id};
+
+                
+                 function sortColumn(column_name, direction)
+                 {
+                     $("#tbContent").block(
+                        { message:  '<img style="border:0px none" src="./Includes/assets/images/loading_2.gif" />',
+                            css:{ width:"18px",
+                                 "border-width":"0",
+                                 "border-style":"none",
+                                 "top":"50px",
+                                 "background-color":"transparent" },
+                             overlayCSS:{ opacity:0.1 } });
+
+                   var url = "ajax/get-document-list.php";
+
+                    $.post(url, { column_name: column_name, direction: direction, oper: 'search', 'is_sort':'Y', 
+                        owner_doc_type:owner_doc_type, ref_pk_id:ref_pk_id}, function(response) {
+                       $(".tableWrapper").html(response);
+                       $("#tbContent").unblock();
+                    }); 
+                 }
+                 
+                 function countObj(obj){
+                        var count = 0;
+                        for (i in obj) {
+                            if (obj.hasOwnProperty(i)) {
+                                count++;
+                            }
+                        }
+                        return count;
+                   }
+
+                   function objKeyExist(obj, key){
+                       var is_has = false;
+                       for (i in obj) {
+                            if(i == key){
+                                is_has = true;
+                                break;
+                            }
+                        }
+                        return is_has;
+                   }
+
+                   function removeObj(obj, removeItem){
+                        var new_obj = [];
+                        for (i in obj) {
+                            if(i != removeItem){
+                                new_obj[i] = obj[i];
+                            }
+                        }
+                        return new_obj;
+                   }
+                
+                function executeFN(doc_id){                    
+                                $('.tableWrapper').block(
+                                        { message:  '<img style="border:0px none" src="./Includes/assets/images/loading_2.gif" />',
+                                            css:{ width:"18px",
+                                                 "border-width":"0",
+                                                 "border-style":"none",
+                                                 "top":"50px",
+                                                 "background-color":"transparent"},
+                                             overlayCSS:{ opacity:0.1 } });
+                               var url = 'ajax/get-document-list.php';
+                               var hddSortName = $('#hddSortName').val();
+                               var hdddirection = $('#hdddirection').val();
+
+                                $.post(url, { page: current_page, rows: rows, column_name:hddSortName, oper:'delete',
+                                    direction:hdddirection, owner_doc_type:owner_doc_type, ref_pk_id:ref_pk_id, doc_id:doc_id, ref_data_type:ref_data_type},
+                                function(response) {
+                                if(isExpire(response)) return;
+                                //$("#indicator_small1").hide();
+                                $(".tableWrapper").html(response);
+                                $('.tableWrapper').unblock();
+                                
+                            });                   
+                }
+                
+
+                 $("#pager").paginate({
+				count 		: total_pages,
+				start 		: 1,
+				display     : display,
+				border					: false,
+				text_color  			: '#888',
+				background_color    	: '#EEE',
+				text_hover_color  		: 'black',
+				background_hover_color	: '#CFCFCF',
+                                onChange: function(page){
+                                            current_page = page;
+                                            $('#tbContent').block(
+                                            { message:  '<img style="border:0px none" src="./Includes/assets/images/loading_2.gif" />',
+                                                css:{ width:"18px",
+                                                     "border-width":"0",
+                                                     "border-style":"none",
+                                                     "top":"50px",
+                                                     "background-color":"transparent"},
+                                                 overlayCSS:{ opacity:0.1 } });
+                                           var url = 'ajax/get-document-list.php';
+                                           var hddSortName = $('#hddSortName').val();
+                                           var hdddirection = $('#hdddirection').val();
+                                          
+                                            $.post(url, { page: page, rows: rows, column_name:hddSortName, oper:'paging',
+                                                direction:hdddirection, owner_doc_type:owner_doc_type, ref_pk_id:ref_pk_id},
+                                            function(response) {
+                                            if(isExpire(response)) return;
+                                            //$("#indicator_small1").hide();
+                                            $("#tbContent").html(response);
+                                            $('#tbContent').unblock();
+                                        });
+                                }
+			});
+ 
+
+
+</script>

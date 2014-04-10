@@ -1,0 +1,147 @@
+/* Add additional stylesheets below
+-------------------------------------------------- */
+
+.my_block_head { padding:20px; background:#2D2E2F;}
+.my_block_head h3 { color:#dfdfdf; text-shadow:1px 1px #000;}
+.my_block { padding:35px; background:#fff; box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.2); position:relative;}
+.fixed {position:fixed}
+.left_block .my_block { padding:20px;}
+
+ul.navDropdown, .navDropdown > li, .navDropdown > li > a {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+
+ul.navDropdown {
+	line-height: 1;
+}
+
+.navDropdown, .navDropdown ul {
+	position: relative;
+	display: block;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+	.navDropdown li, .navDropdown ul li {
+		display: block;
+		position: relative;
+		padding: 0;
+		margin: 0;
+	}
+
+	.navDropdown > li > a {
+		position: relative;
+		display: block;
+		padding: 10px 10px 10px 20px;
+		border-bottom: 1px solid #252525;
+
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 11px;
+		font-weight: 400;
+		color: #fff;
+		font-weight:bold;
+		text-decoration: none;
+		text-shadow: 0 1px 1px #000;
+
+		background: #434343; /* Background for old browsers */
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#555555', endColorstr='#333333',GradientType=0); /* Background for Internet Explorer 8-9 */
+		background-image: -moz-linear-gradient(#555, #333);
+		background-image: -webkit-gradient(linear, left top, left bottom, from(#555), to(#333));
+		background-image: -webkit-linear-gradient(#555, #333);
+		background-image: -o-linear-gradient(#555, #333);
+		background-image: -ms-linear-gradient(#555, #333);
+		background-image: linear-gradient(#555, #333);
+			-moz-box-shadow: 0 0px 0px #999, 0 1px 0 #666 inset;
+		-webkit-box-shadow: 0 0px 0px #999, 0 1px 0 #666 inset;
+		box-shadow: 0 0px 0px #999, 0 1px 0 #666 inset;
+	}
+
+
+	.navDropdown > li > a:hover, .navDropdown > li:hover > a, .navDropdown > li.active > a{
+		background-color: #35afe3;
+		background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(69, 199, 235)),to(rgb(38, 152, 219)));
+		background-image: -webkit-linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
+		background-image: -moz-linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
+		background-image: -o-linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
+		background-image: -ms-linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
+		background-image: linear-gradient(top, rgb(69, 199, 235), rgb(38, 152, 219));
+		filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,StartColorStr='#45c7eb', EndColorStr='#2698db');
+		-webkit-box-shadow: inset 0px 1px 0px 0px #6ad2ef;
+		-moz-box-shadow: inset 0px 1px 0px 0px #6ad2ef;
+		box-shadow: inset 0px 1px 0px 0px #6ad2ef;
+		-webkit-transition: height .4s ease-out;
+		-ms-transition: height .4s ease-out;
+		-moz-transition: height .4s ease-out;
+		-o-transition: height .4s ease-out;
+	}
+
+	.navDropdown li ul { background:#FFF;}
+	.navDropdown li li {
+		position: relative;
+		height: 0px;
+		top: -9999px;
+
+		-webkit-transition: height .7s ease-out;
+		-ms-transition: height .7s ease-out;
+		-moz-transition: height .7s ease-out;
+		-o-transition: height .7s ease-out;
+		transition-delay: .2s;
+		-moz-transition-delay: .2s; /* Firefox 4 */
+		-webkit-transition-delay: .2s; /* Safari and Chrome */
+		-o-transition-delay: .2s; /* Opera */
+	}
+
+	.navDropdown li:hover li {
+		-webkit-transition: height .7s ease-out;
+		-ms-transition: height .7s ease-out;
+		-moz-transition: height .7s ease-out;
+		-o-transition: height .7s ease-out;
+		transition-delay: .2s;
+		-moz-transition-delay: .2s; /* Firefox 4 */
+		-webkit-transition-delay: .2s; /* Safari and Chrome */
+		-o-transition-delay: .2s; /* Opera */
+		height: 34px;
+		top: auto;
+
+	}
+
+	.navDropdown li.active li {
+		height: 34px;
+		position: relative;
+		top: auto;
+	}
+
+	/* The dropdown menu's links */
+	.navDropdown ul li a {
+		/* Layout & positioning */
+		position: relative;
+		display: block;
+		padding: 8px 10px 7px 35px;
+
+		/* Text */
+		background: #fff;
+		color: #9f9f9f;
+
+		border-top: 1px solid #efeff0 !important;
+		display: block;
+		position: relative;
+		font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font-size: 0.923em;
+		font-weight: 400;
+		color: #888;
+		background-image: url('../img/sub_menu.png');
+		background-position: center  left;
+		background-repeat: no-repeat;
+		-webkit-transition: height .4s ease-out;
+		-ms-transition: height .4s ease-out;
+		-moz-transition: height .4s ease-out;
+		-o-transition: height .4s ease-out;
+
+	}
+	.navDropdown ul li a:hover { color:#000;}

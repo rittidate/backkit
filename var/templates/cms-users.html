@@ -1,0 +1,114 @@
+<link rel="stylesheet" type="text/css" media="screen" href="./Includes/assets/jqgrid/css/ui.jqgrid.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.filter.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/prettify.css" />
+
+<script src="./Includes/assets/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqui/js/jquery-ui-1.8.7.custom.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/i18n/grid.locale-en.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/prettify.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.filter.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqvalidate/jquery.validate.js" type="text/javascript"></script>
+<script src="./Includes/assets/js/jquery.blockUI.js" type="text/javascript"></script>
+
+<div id="messageDialog"></div>
+            <form id="frm{$variable_el}">
+                <fieldset>
+                    <div class="pnlContainer">
+                            <div id="pnlGrid{$variable_el}" class="show" >
+                                     <!-- Includes Publisher Grid -->
+                                     {$users_grid}
+                            </div>
+                                <div id="pnlAddEdit">
+                                    <div id="content" style="margin-left:15px">
+                                        <div class="pnlAddEditOnly">
+                                            <table cellpadding="3" style="margin:0px;font-size:9pt" border="0">
+                                                    <tr>
+                                                        <td style="width:120px;">{$smarty.const.MSG_CONTACT_NAME}</td>
+                                                        <td style="width: 350px">
+                                                            <input type="text" class="input-xlarge" id="txt_contact_name" class="validate[required]" name="txt_contact_name" value="" />
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width:120px;">{$smarty.const.STR_USERNAME}</td>
+                                                        <td style="width: 350px">
+                                                            <input type="text" class="input-xlarge" id="txt_user_name" class="validate[required]" name="txt_user_name" value="" />
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td style="width:120px;">{$smarty.const.STR_PASSWORD}</td>
+                                                        <td style="width: 350px">
+                                                            <input type="password" class="input-xlarge" id="txt_pass_word" class="validate[required]" name="txt_pass_word" value="" />
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width:120px;">{$smarty.const.STR_REENTER_PASSWORD2}</td>
+                                                        <td style="width: 350px">
+                                                            <input type="password" class="input-xlarge" id="txt_repassword" name="txt_repassword" value="" />
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width:120px;">{$smarty.const.MSG_EMAIL}</td>
+                                                        <td style="width: 350px">
+                                                            <input type="text" class="input-xlarge" id="txt_email_address" name="txt_email_address" value="" />
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>{$smarty.const.MSG_GROUP_USER_NAME}</td>
+                                                        <td>
+                                                            <select multiple="multiple"  id="lstGroup" name="lstGroup"  class="multi_select span4" >
+                                                            </select>
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr id="r_validate_password" style="display: none;">
+                                                        <td>&nbsp;</td>
+                                                        <td valign="bottom">
+                                                            {include file="valid-password.inc.html"}
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+			                                        <!-- <tr>
+			                                            <td style="width:120px;">{$smarty.const.MSG_ACTIVE}</td>
+			                                            <td>
+			                                                <input type="checkbox" id="chk_is_active" name="txt_is_active" value="Y" />
+			                                            </td>
+			                                            <td>&nbsp;</td>
+			                                        </tr> -->
+                                                    <tr>
+                                                        <td style="text-align: left;vertical-align: bottom;"><div id="btnClose{$variable_el}" class="btndiv backto" ><span class="ui-icon ui-icon-circle-arrow-w" style="float:left;"></span>&nbsp;{$smarty.const.MSG_BACKTO}</div></td>
+                                                        <td style="float:right;vertical-align: bottom;" ><br/><br/>
+                                                            <div id="btnSave{$variable_el}" class="btndiv" style="width:55px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE}</div>
+                                                            <div id="btnSaveBack{$variable_el}" class="btndiv" style="width:120px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;margin-right: 10px;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE_BACK}</div>
+                                                        </td>
+                                                        <td></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                </div>
+                    </div>
+                    </fieldset>
+            </form>
+
+
+<script  type="text/javascript">
+jQuery(document).ready(function(){
+    $("#lstGroup").multiselect({
+       multiple: true,
+       noneSelectedText: '{$smarty.const.MSG_PLEASE_SELECT}' + '{$smarty.const.MSG_USER}',
+       selectedList: 3,
+       height:200
+    }).multiselectfilter();
+
+});
+
+</script>

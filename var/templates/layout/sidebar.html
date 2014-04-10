@@ -1,0 +1,54 @@
+            <!-- LEFT BLOCK -->
+            <div class="span3 fixed">
+                <!-- MENU -->
+                <div class="top_line soc">
+                    <div class="soc_icons">
+                        <a href="#"><div class="icon_google"></div></a>
+                        <a href="#"><div class="icon_facebook"></div></a>
+                        <a href="#"><div class="icon_t"></div></a>
+                    </div>
+                </div>
+                <ul class="navDropdown">
+                    {section name=n loop=$aLeftMenuNav}
+                    {if $aLeftMenuNav[n].selected}
+                        <li class="active">
+                    {else}
+                        <li class="">
+                    {/if}
+                        <a href="{$adminBaseURL}{$aLeftMenuNav[n].filename|escape}">
+                                <span>{$aLeftMenuNav[n].title|escape}</span>
+                        </a>
+                        <ul class="">
+                            {section name=sub loop=$aLeftMenuSubNav}
+                                {if $aLeftMenuNav[n].menu == $aLeftMenuSubNav[sub].parent}
+                                    <li><a href="{$adminBaseURL}{$aLeftMenuSubNav[sub].filename|escape}">{$aLeftMenuSubNav[sub].title|escape}</a></li>
+                                {/if}
+                            {/section}
+                        </ul>
+                        </li>
+                    {/section}
+<!--
+                    {foreach from=$aLeftMenuNav key=k item=v}
+                        {if $v.link|@count > 1}
+                            <li class="{if $v.selected}active{/if}"><a href="#">{$v.title}</a>
+                                <ul class="">
+                                    {foreach from=$v.link item=link}
+                                        <li><a href="{$link.filename}">{$link.title}</a></li>
+                                    {/foreach}
+                                </ul>
+                            </li>
+                        {else}
+                            <li class="{if $v.selected}active{/if}">
+                                {foreach from=$v.link item=link}
+                                        <a href="{$link.filename}">
+                                                <span>{$link.title}</span>
+                                        </a>
+                                {/foreach}
+                            </li>
+                        {/if}
+                    {/foreach}
+-->
+                </ul>
+
+            </div>
+        	<!-- /LEFT BLOCK -->

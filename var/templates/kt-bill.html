@@ -1,0 +1,178 @@
+<link rel="stylesheet" type="text/css" media="screen" href="./Includes/assets/jqgrid/css/ui.jqgrid.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.filter.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/prettify.css" />
+
+<script src="./Includes/assets/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqui/js/jquery-ui-1.8.7.custom.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/i18n/grid.locale-en.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/prettify.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.filter.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqvalidate/jquery.validate.js" type="text/javascript"></script>
+<script src="./Includes/assets/js/jquery.blockUI.js" type="text/javascript"></script>
+ {$js_preriod}
+
+
+<div id="messageDialog"></div>
+
+<form id="frm{$variable_el}">
+    <fieldset>
+        <div class="pnlContainer">
+                <div id="pnlGrid{$variable_el}" class="show" >
+                    <div class="row-fluid">
+                        <div class="span3">
+                            <select id="filter_supply{$variable_el}"></select>
+                        </div>
+                        <div class="span2">
+                            <select id="period_preset" class="span12" >
+                                            {html_options options=$periodPresetOptions selected=$dateSelected}
+                            </select>
+                        </div>
+                        <div class="span2">
+                            <input class="span12" class="preriod_date" type="text" id="period_start" value="{$dStart}" name="period_start" placeholder="Period Start" />
+                        </div>
+                        <div class="span2">
+                             <input class="span12" class="preriod_date" type="text" id="period_end" value="{$dEnd}" name="period_end" placeholder="Period End" />
+                        </div>
+                    </div>
+                         <!-- Includes Publisher Grid -->
+                         {$bill_grid}
+                </div>
+                    <div id="pnlAddEdit">
+                        <div id="content" style="margin-left:15px">
+                            <div class="pnlAddEditOnly">
+                                   <table cellpadding="3" style="margin:0px;font-size:9pt" border="0">
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_BILL_NUMBER}</td>
+                                            <td>
+                                                <input type="hidden" id="txt_id" name="txt_id"/>
+                                                <input type="text" class="input-medium" id="txt_bill_number" name="txt_bill_number"  placeholder="{$smarty.const.MSG_BILL_NUMBER}"/>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_BILL_DATE}</td>
+                                            <td>
+                                                <input type="text" class="input-medium" id="txt_bill_date" name="txt_bill_date"  placeholder="{$smarty.const.MSG_BILL_DATE}"/>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_SUPPLY}</td>
+                                            <td>
+                                            	<select class="span3" id="select_supply_id" name="select_supply_id"></select>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+            
+                                        <tr>
+                                            <td style="width:120px;">{$smarty.const.MSG_ACTIVE}</td>
+                                            <td>
+                                                <input type="checkbox" id="chk_is_active" name="txt_is_active" value="Y" />
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+
+                                    </table>
+                                    
+                                        <table id="grid-billdetail" class="table table-bordered">
+                                            <thead>
+                                                    <tr>
+                                                        <th style="width:60px;">{$smarty.const.MSG_BARCODE}</th>
+                                                        <th>{$smarty.const.MSG_PRODUCT}</th>
+                                                        <th style="width:40px;">{$smarty.const.MSG_MFD_EXP}</th>
+                                                        <th style="width:20px;">{$smarty.const.MSG_PRICE}</th>
+                                                        <th style="width:20px;">{$smarty.const.MSG_COST}</th>
+                                                        <th style="width:20px;">{$smarty.const.MSG_PACKPER}</th>
+                                                        <th style="width:20px;">{$smarty.const.MSG_PACK} {$smarty.const.MSG_COST}</th>
+                                                        <th style="width:20px;">{$smarty.const.MSG_QTY}</th>
+                                                        <th style="width:20px;">{$smarty.const.MSG_TOTAL}</th>
+                                                        <th style="width:20px;">{$smarty.const.MSG_VAT_INCLUDE}</th>
+                                                        <th></th>
+                                                    </tr>
+                                            </thead>
+                                            <tbody class="billdetail_tr">
+                                                    <tr class="footer_grid">
+                                                        <td colspan="6"><a href="#myModal" role="button" class="btn" style="float:left;" data-toggle="modal">Add Product</a>subtotal</td>
+                                                        <td colspan="5"><input type="text" id="txt_total" name="txt_total" class="input-medium" /></td>
+                                                    </tr>
+                                                    <tr class="footer_grid">
+                                                        <td colspan="6">{$smarty.const.MSG_DISCOUNT} <br><input type="checkbox" id="chk_discount_percent" name="chk_discount_percent" value="Y" />Percent(%)</td>
+                                                        <td colspan="5"><input type="text" id="txt_discount" name="txt_discount" class="input-medium" /></td>
+                                                    </tr>
+                                                    <tr class="footer_grid">
+                                                        <td colspan="6">{$smarty.const.MSG_VAT_INCLUDE} (<input type="text" id="txt_vat_value" name="txt_vat_value" class="input-mini" /> %) <input type="checkbox" id="chk_includevat" name="chk_includevat" value="Y" /></td>
+                                                        <td colspan="5"><input type="text" id="txt_vat" name="txt_vat" class="input-medium" /></td>
+                                                    </tr>
+                                                    <tr class="footer_grid">
+                                                        <td colspan="6">Grand Total</td>
+                                                        <td colspan="5"><input type="text" id="txt_grandtotal" name="txt_grandtotal" class="input-medium" /></td>
+                                                    </tr>
+                                            </tbody>
+                                        </table>
+                                    <table cellpadding="3" style="margin:0px;font-size:9pt" border="0">
+                                        <tr>
+                                            <td style="width:120px;text-align: left;vertical-align: bottom;"><div id="btnClose{$variable_el}" class="btndiv backto" ><span class="ui-icon ui-icon-circle-arrow-w" style="float:left;"></span>&nbsp;{$smarty.const.MSG_BACKTO}</div></td>
+                                            <td style="float:right;vertical-align: bottom;" ><br/><br/>
+                                                <div id="btnSave{$variable_el}" class="btndiv" style="width:55px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE}</div>
+                                                <div id="btnSaveBack{$variable_el}" class="btndiv" style="width:120px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;margin-right: 10px;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE_BACK}</div>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+
+                                    </table>
+                                    <br/>
+                                    <div id="masterDetail" >
+                                        <div class="masterDetailCaption"> {$smarty.const.STR_DATA_RELATIONSHIP}</div>
+                                        <div id="supplyGrid">
+                                            {$supply_grid}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+        </div>
+        </fieldset>
+</form>
+
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal-header">
+<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+<h3 id="myModalLabel">Add Product</h3>
+</div>
+<div class="modal-body">
+  <table id="add-orderdetail" class="table table-bordered">
+    <thead>
+            <tr>
+                <th colspan="2">
+                    <input type="text" id="search_keyword" name="search_keyword" class="span2" placeholder="{$smarty.const.STR_BTNSEARCH}"/>
+                    <button class="searchKeyword btn">{$smarty.const.STR_BTNSEARCH}</button>
+                </th>
+                <th colspan="3"></th>
+            </tr>
+            <tr>
+                <th>{$smarty.const.MSG_BARCODE}</th>
+                <th>{$smarty.const.MSG_PRODUCT}</th>
+                <th>{$smarty.const.MSG_PRICE}</th>
+                <th style="width:20px;">{$smarty.const.MSG_QTY}</th>
+                <th>Add</th>
+            </tr>
+    </thead>
+    <tbody class="orderdetail_search">
+        <tr class='detail_add_grid'>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+</div>
+<div class="modal-footer">
+<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+<button class="btn btn-primary">Save changes</button>
+</div>
+</div>

@@ -1,0 +1,218 @@
+<link rel="stylesheet" type="text/css" media="screen" href="./Includes/assets/jqgrid/css/ui.jqgrid.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.filter.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/prettify.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/dynatree/skin/ui.dynatree.css">
+
+<script src="./Includes/assets/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqui/js/jquery-ui-1.8.7.custom.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/i18n/grid.locale-en.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/prettify.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.filter.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqvalidate/jquery.validate.js" type="text/javascript"></script>
+<script src="./Includes/assets/dynatree/jquery.dynatree.js" type="text/javascript"></script>
+<script src="./Includes/assets/js/jquery.blockUI.js" type="text/javascript"></script>
+<table cellpadding="2" style="margin:0px;padding-left:10px;font-size:9pt;" border="0px">
+</table>
+
+<div id="messageDialog"></div>
+        <div class="pnlContainer">
+            <div id="pnlGrid{$variable_el}" class="show" >
+                <div class="row-fluid">
+                    <div class="span2">
+                        <select class="span12" id="filter_product_query" name="filter_product_query"></select>
+                    </div>
+                    <div class="span3">
+                        <button id="filter_menu_product" class="ui-multiselect ui-widget ui-state-default ui-corner-all" type="button" aria-haspopup="true" tabindex="0" style="width: 100%; margin-top: 1px; margin-bottom: 1px; padding-top: 3px;">
+                            <span class="ui-icon ui-icon-triangle-2-n-s"></span>
+                            <spann class="msgContentCategory">Any</span>
+                        </button>
+                    </div>
+
+                    <div class="span5 pull-right">
+                        <div class="row-fluid">
+                            <select class="span3 offset1" id="filter_category_type" name="filter_category_type">
+                                    <option value="grid">Grid</option>
+                                    <option value="category">Category</option>
+                            </select>
+                            <button id="btnPdf{$variable_el}" class="btn span4" ><i class="ui-icon ui-icon-document" style="float:left;"></i>&nbsp;{$smarty.const.STR_PDF}</button>
+                            <button id="btnExcel{$variable_el}" class="btn span4" ><i class="ui-icon ui-icon-document" style="float:left;"></i>&nbsp;{$smarty.const.STR_EXCEL}</button>
+                        </div>
+                    </div>
+                </div>
+                
+
+                
+                
+                <!-- Includes Publisher Grid -->
+                {$product_grid}
+                
+                <div class="bs-example" id="pdQuery">
+					<div class="row">
+						<div class="pagination hidden-phone pull-right">
+							<ul class="pagerProduct">
+							</ul>
+						</div>
+						<div class="container">
+							<div class="visible-phone">
+								<ul class="pager pagerProductMini">
+								</ul>
+							</div>
+						</div>		
+					</div>
+                                        <div id="productQuery" class="row-fluid"></div>
+					<div class="row">
+						<div class="pagination hidden-phone pull-right">
+							<ul class="pagerProduct"></ul>
+						</div>
+						<div class="container">
+							<div class="visible-phone">
+								<ul class="pager pagerProductMini"></ul>
+							</div>
+						</div>		
+					</div>
+				</div>
+            </div>
+            <form id="frm{$variable_el}" method="post" enctype="multipart/form-data" target="upload_target" >
+            <div id="pnlAddEdit">
+                <div id="content" style="margin-left:15px">
+                    <div class="pnlAddEditOnly">
+                        <table cellpadding="3" style="margin:0px;font-size:9pt" border="0">
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_BARCODE}</td>
+                                <td>
+                                    <input type="text" class="input-large" id="txt_barcode" name="txt_barcode"/>
+                                    <input type="checkbox" id="txt_barcode_check" name="txt_barcode_check"/>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_PRODUCT_NAME_EN}</td>
+                                <td>
+                                    <input type="text" class="input-large" id="txt_name_en" name="txt_name_en"/>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_PRODUCT_NAME_TH}</td>
+                                <td>
+                                    <input type="text" class="input-large" id="txt_name_th" name="txt_name_th"/>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_VOLUMN}</td>
+                                <td>
+                                    <input type="text" class="input-mini" id="txt_volumn" name="txt_volumn"/>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_UNIT}</td>
+                                <td>
+                                    <select class="span1" id="select_unit" name="select_unit"></select>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_PRICE}</td>
+                                <td>
+                                    <input type="text" class="input-mini" id="txt_price" name="txt_price"/>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_MENU1}</td>
+                                <td>
+                                    <select class="span2" id="select_menu1" name="select_menu1"></select>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_MENU2}</td>
+                                <td>
+                                    <select class="span2" id="select_menu2" name="select_menu2"></select>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_MENU3}</td>
+                                <td>
+                                    <select class="span2" id="select_menu3" name="select_menu3"></select>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_WEIGHT}</td>
+                                <td>
+                                    <input type="text" class="input-mini" id="txt_weight" name="txt_weight" />
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_STOCK}</td>
+                                <td>
+                                    <input type="text" class="input-mini" id="txt_stock" name="txt_stock" />
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_PRODUCT_EXPIRE}</td>
+                                <td>
+                                    <input type="text" class="input-medium" id="txt_expire" name="txt_expire" />
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_IMAGE}</td>
+                                <td>
+                                    <div class="thumbnail">
+                                    <img id="img_image" name="img_image" />
+                                    </div>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_UPLOAD}</td>
+                                <td>
+                                    
+                                                  <input type="hidden" id="txt_id" name="txt_id"/>
+                                                  <input type="hidden" id="txt_image" name="txt_image"/>
+                                                  <input id="upload_file" name="upload_file" type="file" />
+                                                  <iframe id="upload_target" name="upload_target" src="#" style="width:0;height:0;border:0px solid #fff;"></iframe>
+                                     
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_DESCRIPTION}</td>
+                                <td>
+                                    <textarea id="txt_description" name="txt_description"></textarea>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+
+                            <tr>
+                                <td style="width:120px;">{$smarty.const.MSG_ACTIVE}</td>
+                                <td>
+                                    <input type="checkbox" id="chk_is_active" name="txt_is_active" value="Y" />
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left;vertical-align: bottom;"><div id="btnClose{$variable_el}" class="btndiv backto" ><span class="ui-icon ui-icon-circle-arrow-w" style="float:left;"></span>&nbsp;{$smarty.const.MSG_BACKTO}</div></td>
+                                <td style="float:right;vertical-align: bottom;" ><br/><br/>
+                                    <div id="btnSave{$variable_el}" class="btndiv" style="width:55px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE}</div>
+                                    <div id="btnSaveBack{$variable_el}" class="btndiv" style="width:120px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;margin-right: 10px;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE_BACK}</div>
+                                </td>
+                                <td>&nbsp;</td>
+                            </tr>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>

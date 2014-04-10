@@ -1,0 +1,420 @@
+{include file="grid-wrapper.inc.html"}
+<script  type="text/javascript">
+MGMT{$variable_el}.prototype = new GridBase();
+
+function MGMT{$variable_el}(aInfo){
+    
+    this.constructor(aInfo);
+    this.grid;
+    var thisClass = this;
+    this.hideMid = [];
+    this.hideLarge = [];
+    this.objShipCompany = {};
+    
+    this.dataSearch = function()
+    {
+        // var keyword = $(".search-query").val();
+        var companyid = checkboxChecked("input[name='multiselect_filter_ship_company{$variable_el}']:checked");
+        var oData = { q:aInfo.classname,
+            oper:"search",
+            companyid:companyid
+        };
+        jQuery.extend(oData, this.optSearch);
+        //$(aInfo.grd).setPostData(oData);
+        $(aInfo.grd).jqGrid('setGridParam',{ postData: null });
+        $(aInfo.grd).jqGrid('setGridParam',{ postData:oData })
+        //clear param
+        $(aInfo.grd).jqGrid().setGridParam({ url : 'processajax.php?q=' + aInfo.classname +'&nd='+new Date().getTime()+'&fileclass='+ aInfo.fileclass })
+    }
+
+    this.saveData = function()
+    {
+                var url = $(aInfo.grd).getGridParam('url');
+
+                var pk_id = this.hdnID;
+                var objTxt = this.getTxt();
+                var objChk = this.getChk();
+                var objSel = this.getSelect();
+                var oper;
+
+
+                if($.trim(pk_id)!=''){
+                    oper = 'edit';
+                }else{
+                    oper = 'add';
+                }
+
+                var o_data = { oper : oper, pk_id : pk_id};
+
+                //$("#pnlAddEdit").block(blockStyleCSS);
+                jQuery.extend(o_data, objTxt, objChk, objSel);
+
+                $.ajax({
+                                type: "POST",
+                                url: url,
+                                dataType: "json",
+                                //async: false,
+                                data:o_data,
+                                success: function(data)
+                                {
+                                    thisClass.hdnID = data.id;
+                                    thisClass.clearBlock(oper,data.error);
+                                    thisClass.gridReload();
+                                    $('#pnlAddEdit').css('position', 'static');
+                                },
+                                error: function(response) {
+                                    thisClass.hdnID = '';
+                                    //$('#pnlAddEdit').unblock();
+                                    $('#pnlAddEdit').pnlAddEdit("close");
+                                    if(isExpire(response.responseText)) return;
+                                }
+                });
+
+                return true;
+            //}else return false
+    }
+    
+    this.excuteFN = function(ids){
+        $(aInfo.grd).jqGrid('setGridParam',{ postData:{ 'oper':'del', 'ids':ids } });
+        $(aInfo.grd).trigger("reloadGrid");
+    }
+    
+    this.jqGrid = function(){
+            thisClass.grid = jQuery(aInfo.grd).jqGrid({
+                url: this.setGrdParam(),
+                datatype: 'json',
+                colNames: aInfo.colN,
+                colModel: aInfo.colM,
+                rowNum:60,
+                rowList:[20,40,60],
+                pager: jQuery(aInfo.pgrd),
+                sortname: aInfo.initSortName,
+                viewrecords: true,
+                sortorder: "asc",
+                caption: aInfo.g_caption,
+                editurl: this.setGrdParam(),
+                width:$('.pnlContainer').width(),
+                height:'auto',
+                rownumbers: true,
+                multiboxonly: true,
+                hoverrows:false,
+                loadBeforeSend: function(xhr){
+                    thisClass.setInputSize();
+                },
+                loadError : function(res,st,err) {
+                    if(isExpire(res.responseText)) return;
+                    thisClass.initialControl();
+                },
+                loadComplete : function(res) {
+
+                    if($(aInfo.grd).getGridParam('records')>0){
+                        var totals = $(aInfo.grd).getGridParam('records');
+                        var rowPerPage = $(aInfo.grd).getGridParam('rowNum');
+                        var page = $(aInfo.grd).getGridParam("page");
+                        if(totals > (rowPerPage*page)){
+                            $(aInfo.grd).setGridHeight('auto');
+                        }
+                        else {
+                            if(totals - (rowPerPage*(page-1) ) > 0){
+                                $(aInfo.grd).setGridHeight('auto');
+                            }
+                            else
+                             	$(aInfo.grd).setGridHeight('auto');
+                        }
+                    }
+                    else
+                    {
+                     	$(aInfo.grd).setGridHeight('auto');
+                    }
+                    
+                  thisClass.setButtonUI('.btnAction');
+                    $('.activestatus').addClass('ui-corner-all');
+                    $('.activestatus').addClass('ui-state-hover');
+                    $('.activestatus').css('background', 'none');
+                    $('.activestatus').css('border', 'none');
+                    $('.activestatus').css('cursor', 'pointer');
+                   thisClass.initialControl();
+                   return;
+                },
+                ondblClickRow:function(id){
+                    thisClass.editAction(id);
+                },
+                afterInsertRow: function(rowid, rowdata){
+                    $('#btnEdit{$variable_el}'+rowid).click(function(){
+                        thisClass.editAction(rowid);
+                    });
+                    
+                    $('#btnActive{$variable_el}'+rowid).click(function(){
+                        thisClass.editStatus('is_active', rowid);
+                    });
+                    
+                    $('#btnDelete{$variable_el}'+rowid).click(function(){
+                        thisClass.editStatus('is_delete', rowid);
+                    });
+                }
+            });
+    }
+
+    this.editAction = function(id){
+        if(this.isDetail==false){
+            var ret = $(aInfo.grd).getRowData(id);
+            this.popContainAddEdit('edit', id, ret.group_name);
+        }else{
+            window.location.href = aInfo.classname.replace(/_/g,'-').toLowerCase() + '?editID='+id;
+        }
+    }
+    
+    
+    this.popContainAddEdit = function (oper, pk_id, title){
+        this.closePnlGrid('pnlGrid{$variable_el}');
+        this.hdnID = '';
+
+        if(title==undefined)
+            title = '';
+		
+        this.clearChk();
+        this.clearTxt();
+        
+        if(oper=='edit'){
+            this.hdnID = pk_id;
+			$("#masterDetail").show();
+        }else{
+
+        }
+        
+        this.loadData();
+
+        $('.noBreadcrumb .label').text(this.breadCrumbLabel + ' - ' + title);
+    }
+
+    this.loadData = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+        $.ajax({
+                    type: "POST",
+                    url: url,
+                    dataType: "json",
+                    data:{ pk_id:thisClass.hdnID, oper:'loadData' },
+                    success: function(data){
+                        thisClass.bindTxt(data);
+                        thisClass.bindChk(data);
+                        thisClass.bindSelect(data);
+						//thisClass.loadShipCompanyType(data.ship_type_id);
+						if(data.id == ''){
+							$("#txt_ship_type").hide();
+							//$("#select_ship_type").show();
+							thisClass.loadAddShipType();
+						}else{
+							$("#select_ship_type_val").multiselect('destroy');
+							$("#txt_ship_type").show();
+							$("#txt_ship_type").text(data.ship_type);
+							$("#select_ship_type_val").hide();
+							$("#select_ship_company").multiselect('refresh');
+						}
+						
+                        MGMTKt_Ship_Rate.prototype.optSearch = { companyid:data.ship_company,shiptypeid : data.id }
+                        if(grdKt_Ship_Rate!=undefined){
+                            grdKt_Ship_Rate.gridReload();
+                        }
+
+                    },
+                    error: function(response) {
+                            if(isExpire(response.responseText)) return;
+                    }
+            });
+    }
+    
+    this.loadAddShipType = function(){
+    	var url = $(aInfo.grd).getGridParam('url');
+    	var option = '';
+        $("#select_ship_type_val").multiselect(
+        {
+            multiple: false,
+            noneSelectedText: 'Select Ship Type',
+            selectedList: 1
+        }).multiselectfilter();
+    	$.getJSON(
+			url,
+			{ oper : 'loadAddShipType' },
+			function(result){
+				$("#select_ship_type_val option").remove();
+				$.each(result.rows, function(ini, val){
+					option += '<option value="'+val.id+'">'+val.name+'</option>';
+				});
+				$("#select_ship_type_val").append(option);
+				$("#select_ship_type_val").multiselect('refresh');
+		});
+    }
+    
+    this.getSelectShipCompany = function(){
+		var url = $(aInfo.grd).getGridParam('url');
+		$.getJSON(
+			url,
+			{ oper : 'getSelectShipCompany' },
+			function(result){
+				thisClass.objShipCompany = result;
+		});
+    }
+    
+    this.setSelectShipCompany = function(id, multiple, selectedList, callbackFunction){
+    	$(id+" option").remove();
+    	var before,after;
+    	result = thisClass.objShipCompany;
+		var option = '';
+		$.each(result.rows, function(ini, val){
+			option += '<option value="'+val.id+'">'+val.name+'</option>';
+		});
+		$(id).append(option);
+		
+        $(id).multiselect(
+        {
+            multiple: multiple,
+            noneSelectedText: 'Select Ship Company',
+            selectedList: selectedList,
+            create: function(){
+	        	if(multiple){
+	        		$(id).next().css('width', '');
+	        		$(id).next().addClass('span12');
+	        	}
+	        },
+            open: function(){
+            	before = $(id).multiselect("update");
+            },
+           	close: function(){
+           		after = $(id).multiselect("update");
+           		
+           		if(callbackFunction != undefined){
+           			if(before != after){
+		      			callbackFunction();
+		      		}
+		      	}
+		   	}
+        }).multiselectfilter();
+        $(id).multiselect("uncheckAll");
+    }
+
+    this.getSelectShipType = function(id, multiple, selectedList, callbackFunction, companyid){
+		var before,after;
+		var url = $(aInfo.grd).getGridParam('url');
+		var option = '';
+		$.getJSON(
+			url,
+			{ oper : 'getSelectShipType',
+			companyid : companyid },
+			function(result){
+				$(id+" option").remove();
+				if(result != null){
+					$.each(result.rows, function(ini, val){
+						option += '<option value="'+val.id+'">'+val.name+'</option>';
+					});
+					$(id).append(option);
+				}
+		        $(id).multiselect(
+		        {
+		            multiple: multiple,
+		            noneSelectedText: 'Select Ship Type',
+		            selectedList: selectedList,
+                    create: function(){
+			        	if(multiple){
+			        		$(id).next().css('width', '');
+			        		$(id).next().addClass('span12');
+			        	}
+			        },
+                    open: function(){
+		            	before = $(id).multiselect("update");
+		            },
+	               	close: function(){
+	               		after = $(id).multiselect("update");
+	               		if(callbackFunction != undefined){
+	               			if(before != after){
+				      			callbackFunction();
+				      		}
+				      	}
+				   	}
+		        }).multiselectfilter();
+		        $(id).multiselect("uncheckAll");
+		});
+    }
+    
+	this.gridSelectShipCompany = function(){
+		$("#select_ship_type option").remove();
+		var companyid = checkboxChecked("input[name='multiselect_select_ship_company']:checked");
+		thisClass.getSelectShipType("#select_ship_type", false,1, null, companyid);
+	}
+
+	this.gridFilterShipCompany = function(){
+		$("#filter_ship_type option").remove();
+		var companyid = checkboxChecked("input[name='multiselect_filter_ship_company{$variable_el}']:checked");
+		thisClass.dataSearch();
+        $(aInfo.grd).setGridParam({ page:1 });
+        $(aInfo.grd).setGridParam({ datatype:'json'});
+        $(aInfo.grd).trigger("reloadGrid");
+	}
+	
+	this.gridFilterShipType = function(){
+		// $(".search-query").val('');
+		thisClass.dataSearch();
+        $(aInfo.grd).setGridParam({ page:1 });
+        $(aInfo.grd).setGridParam({ datatype:'json'});
+        $(aInfo.grd).trigger("reloadGrid");
+	}
+	
+    this.initEvent = function(){
+        $("#btnClose{$variable_el}").click(function(){ 
+        	thisClass.openPnlGrid('pnlGrid{$variable_el}'); 
+        });
+        $("#btnSave{$variable_el}").click(function() { thisClass.saveData(); });
+        $("#btnSaveBack{$variable_el}").click(function() {
+            if(thisClass.saveData()){
+                thisClass.openPnlGrid('pnlGrid{$variable_el}');
+                $("#status_enum").show();
+            }
+        });
+
+        $('#btnDelete{$variable_el}').click(function(){
+            var ids = jQuery(aInfo.grd).getGridParam('selarrrow');
+            if(ids.length == 0){
+                showMessage('{$smarty.const.MSG_NOT_SELECT}', true);
+                return;
+            }
+            thisClass.confirmDlg(msg_delconfirm, msg_delcaption, ids);
+        });
+        
+
+        $('#btnAdd{$variable_el}').click(function(){
+            if(thisClass.isDetail==false){
+                thisClass.popContainAddEdit('add');
+                $('#masterDetail').hide();
+            }else{
+                window.location.href = aInfo.classname.toLowerCase() + '?editID=';
+            }
+        });
+
+        //$('#btnSearch{$variable_el}').click(function(){ thisClass.gridReload() });
+		$('.search-query[name="{$variable_el}"]').keyup(function(){ thisClass.gridReload(); });
+		$('.navbar-search[name="{$variable_el}"]').submit(function(){ thisClass.gridReload(); return false; });
+
+        this.setButtonUI('.btndiv');
+        thisClass.jqGrid();
+        
+        thisClass.getSelectShipCompany();
+        thisClass.setSelectShipCompany("#filter_ship_company{$variable_el}", true,3, thisClass.gridFilterShipCompany );
+		thisClass.setSelectShipCompany("#select_ship_company", false,1, null );
+        $(window).resize(this.fitTable);
+        this.fitTable();
+    }
+
+    $.ajaxSetup({
+       async: false
+    });
+
+    thisClass.initEvent();
+}
+
+var grd{$variable_el}
+jQuery(document).ready(function(){
+
+    grd{$variable_el} = new MGMT{$variable_el}({$aInfo});
+
+    
+});
+</script>

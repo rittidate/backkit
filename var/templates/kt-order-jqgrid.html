@@ -1,0 +1,777 @@
+{include file="grid-wrapper.inc.html"}
+<script  type="text/javascript">
+MGMT{$variable_el}.prototype = new GridBase();
+
+function MGMT{$variable_el}(aInfo){
+
+    this.constructor(aInfo);
+    this.grid;
+    var thisClass = this;
+    this.hideMid = [];
+    this.hideLarge = [];
+    this.objProductOrder = [];
+    this.objProductAdd = [];
+    var formId = "#frm{$variable_el}";
+    var rule = {
+          txt_firstname:{
+            required: true,
+          },
+          txt_fax:{
+            required: false,
+            number: true,
+            rangelength: [4, 20]
+          },
+          txt_zipcode:{
+            required: false,
+            number: true
+          },
+          txt_telephone:{
+            required: false,
+            number: true,
+            rangelength: [4, 20]
+          },
+          txt_mobile:{
+            required: true,
+            number: true,
+            rangelength: [4, 20]
+          },
+          txt_email: {
+            required: true,
+            email: true,
+          },
+          txt_shipprice:{
+            required: true
+          }
+        };
+
+
+    this.dataSearch = function()
+    {
+        var keyword = $(".search-query").val();
+        var period_start = $("#period_start").val();
+        var period_end = $("#period_end").val();
+        var oData = { q:aInfo.classname,
+            oper:"search",
+            period_start: period_start,
+            period_end: period_end,
+            keyword: keyword
+        };
+        jQuery.extend(oData, this.optSearch);
+        //$(aInfo.grd).setPostData(oData);
+        $(aInfo.grd).jqGrid('setGridParam',{ postData: null });
+        $(aInfo.grd).jqGrid('setGridParam',{ postData:oData })
+        //clear param
+        //$(aInfo.grd).jqGrid().setGridParam({ url : 'processajax.php?q=' + aInfo.classname +'&nd='+new Date().getTime()+'&fileclass='+ aInfo.fileclass })
+    }
+
+    this.saveData = function()
+    {
+                var url = $(aInfo.grd).getGridParam('url');
+
+                var pk_id = this.hdnID;
+                var objTxt = this.getTxt();
+                var objChk = this.getChk();
+                var objSel = this.getSelect();
+                var oper;
+                var shipType = $("#select_shipType").multiselect("getChecked").map(function(){ return this.value; }).get();
+
+                if($.trim(pk_id)!=''){
+                    oper = 'edit';
+                }else{
+                    oper = 'add';
+                }
+
+                objShipType = { shipType : shipType}
+
+                var o_data = { oper : oper, pk_id : pk_id, json: JSON.stringify(thisClass.objProductOrder) };
+
+                //$("#pnlAddEdit").block(blockStyleCSS);
+                jQuery.extend(o_data, objTxt, objChk, objSel, objShipType);
+
+                $.ajax({
+                                type: "POST",
+                                url: url,
+                                dataType: "json",
+                                //async: false,
+                                data:o_data,
+                                success: function(data)
+                                {
+                                    thisClass.hdnID = data.id;
+                                    thisClass.clearBlock(oper,data.error);
+                                    thisClass.gridReload();
+                                    $('#pnlAddEdit').css('position', 'static');
+                                },
+                                error: function(response) {
+                                    thisClass.hdnID = '';
+                                    //$('#pnlAddEdit').unblock();
+                                    $('#pnlAddEdit').pnlAddEdit("close");
+                                    if(isExpire(response.responseText)) return;
+                                }
+                });
+
+                return true;
+            //}else return false
+    }
+
+    this.excuteFN = function(ids){
+        $(aInfo.grd).jqGrid('setGridParam',{ postData:{ 'oper':'del', 'ids':ids } });
+        $(aInfo.grd).trigger("reloadGrid");
+    }
+
+    this.jqGrid = function(){
+            thisClass.grid = jQuery(aInfo.grd).jqGrid({
+                url: this.setGrdParam(),
+                datatype: 'json',
+                colNames: aInfo.colN,
+                colModel: aInfo.colM,
+                rowNum:60,
+                rowList:[20,40,60],
+                pager: jQuery(aInfo.pgrd),
+                sortname: aInfo.initSortName,
+                viewrecords: true,
+                sortorder: "desc",
+                caption: aInfo.g_caption,
+                editurl: this.setGrdParam(),
+                width:$('.pnlContainer').width(),
+                height:'auto',
+                rownumbers: false,
+                multiboxonly: true,
+                hoverrows:false,
+                loadBeforeSend: function(xhr){
+                    thisClass.setInputSize();
+                },
+                loadError : function(res,st,err) {
+                    if(isExpire(res.responseText)) return;
+                    thisClass.initialControl();
+                },
+                loadComplete : function(res) {
+
+                    if($(aInfo.grd).getGridParam('records')>0){
+                        var totals = $(aInfo.grd).getGridParam('records');
+                        var rowPerPage = $(aInfo.grd).getGridParam('rowNum');
+                        var page = $(aInfo.grd).getGridParam("page");
+                        if(totals > (rowPerPage*page)){
+                            $(aInfo.grd).setGridHeight('auto');
+                        }
+                        else {
+                            if(totals - (rowPerPage*(page-1) ) > 0){
+                                $(aInfo.grd).setGridHeight('auto');
+                            }
+                            else
+                             	$(aInfo.grd).setGridHeight('auto');
+                        }
+                    }
+                    else
+                    {
+                     	$(aInfo.grd).setGridHeight('auto');
+                    }
+
+                    thisClass.editData = false;
+                    thisClass.setButtonUI('.btnAction');
+                    $('.activestatus').addClass('ui-corner-all');
+                    $('.activestatus').addClass('ui-state-hover');
+                    $('.activestatus').css('background', 'none');
+                    $('.activestatus').css('border', 'none');
+                    $('.activestatus').css('cursor', 'pointer');
+                   thisClass.initialControl();
+                   return;
+                },
+                ondblClickRow:function(id){
+                    thisClass.editAction(id);
+                },
+                afterInsertRow: function(rowid, rowdata){
+                    $('#btnEdit{$variable_el}'+rowid).click(function(){
+                        thisClass.editAction(rowid);
+                    });
+
+                    $('#btnActive{$variable_el}'+rowid).click(function(){
+                        thisClass.editStatus('is_active', rowid);
+                    });
+
+                    $('#btnDelete{$variable_el}'+rowid).click(function(){
+                        thisClass.editStatus('is_delete', rowid);
+                    });
+                }
+            });
+    }
+
+    this.editAction = function(id){
+        if(this.isDetail==false){
+            var ret = $(aInfo.grd).getRowData(id);
+            this.popContainAddEdit('edit', id, ret.group_name);
+        }else{
+            window.location.href = aInfo.classname.replace(/_/g,'-').toLowerCase() + '?editID='+id;
+        }
+    }
+
+
+    this.popContainAddEdit = function (oper, pk_id, title){
+        this.blockUI();
+        this.closePnlGrid('pnlGrid{$variable_el}');
+        this.hdnID = '';
+
+        if(title==undefined)
+            title = '';
+
+        this.clearChk();
+        this.clearTxt();
+
+        if(oper=='edit'){
+            this.hdnID = pk_id;
+            $("#masterDetail").show();
+            $("#btnExcel{$variable_el}").show();
+            $("#btnPdf{$variable_el}").show();
+            $("#txt_email").attr("disabled", "disabled");
+        }else{
+            $("#btnExcel{$variable_el}").hide();
+            $("#btnPdf{$variable_el}").hide();
+            $("#txt_email").removeAttr("disabled");
+        }
+        thisClass.resetValidatForm(formId);
+        this.loadData();
+
+        $('.noBreadcrumb .label').text(this.breadCrumbLabel + ' - ' + title);
+    }
+    
+    this.checkCallOutside = function(){
+            //reference Out Side
+        if(this.refOper=='edit'){    
+            this.editAction(this.editID);
+        }else if(this.refOper=='add')
+            $('#btnAdd{$variable_el}').click();
+        
+        this.refOper = 'default'; //clear;
+        return;
+    }
+
+    this.loadData = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+        $.ajax({
+                    type: "POST",
+                    url: url,
+                    dataType: "json",
+                    data:{ pk_id:thisClass.hdnID, oper:'loadData' },
+                    success: function(data){
+                        thisClass.bindTxt(data);
+                        thisClass.bindChk(data);
+                        thisClass.bindSelect(data);
+                        if(data.country == null){
+                            $("#select_country").val('Thailand');
+                        }
+                        $("#select_country").multiselect('refresh');
+
+                        $(".orderNumber").text("Ship Detail - Order " + thisClass.hdnID);
+                        
+                        thisClass.gridOrderDetail(thisClass.hdnID);
+                        thisClass.unblockUI();
+                        thisClass.editData = true;
+                        MGMTKt_Customer.prototype.optSearch = { customerid:data.customer_id }
+                        MGMTKt_Order_Status_Email.prototype.optSearch = { orderid:thisClass.hdnID }
+                        if(grdKt_Customer!=undefined){
+                            grdKt_Customer.gridReload();
+                        }
+
+                        if(grdKt_Order_Status_Email!=undefined){
+                            grdKt_Order_Status_Email.gridReload();
+                        }
+                        
+                    },
+                    error: function(response) {
+                            if(isExpire(response.responseText)) return;
+                    }
+            });
+    }
+
+    this.getSelectCountry = function(){
+    	var url = $(aInfo.grd).getGridParam('url');
+    	var option = '';
+    	var before, after;
+    	$.getJSON(
+            url,
+            { oper : 'getSelectCountry' },
+            function(result){
+                    $.each(result.rows, function(ini, val){
+                            option += '<option value="'+val.name+'">'+val.name+'</option>';
+                    });
+                    $("#select_country").append(option);
+
+                    $("#select_country").multiselect(
+                    {
+                        multiple: false,
+                        noneSelectedText: 'Select Country',
+                        selectedList: 1
+                    }).multiselectfilter();
+                    $("#select_country").multiselect('uncheckAll');
+        });
+    }
+
+    this.getSelectShipment = function(){
+    	var url = $(aInfo.grd).getGridParam('url');
+    	var option = '';
+    	$.getJSON(
+            url,
+            { oper : 'getSelectShipment' },
+            function(result){
+                    $.each(result.rows, function(ini, val){
+                            option += '<option value="'+val.id+'">'+val.name+'</option>';
+                    });
+                    $("#select_shipment_id").append(option);
+
+            });
+    }
+
+    this.getSelectPayment = function(){
+    	var url = $(aInfo.grd).getGridParam('url');
+    	var option = '';
+    	$.getJSON(
+            url,
+            { oper : 'getSelectPayment' },
+            function(result){
+                    $.each(result.rows, function(ini, val){
+                            option += '<option value="'+val.id+'">'+val.name+'</option>';
+                    });
+                    $("#select_payment_id").append(option);
+
+            });
+    }
+
+    this.getSelectOrderstatus = function(){
+    	var url = $(aInfo.grd).getGridParam('url');
+    	var option = '';
+    	$.getJSON(
+            url,
+            { oper : 'getSelectOrderstatus' },
+            function(result){
+                    $.each(result.rows, function(ini, val){
+                            option += '<option value="'+val.id+'">'+val.name+'</option>';
+                    });
+                    $("#select_order_status").append(option);
+
+            });
+    }
+
+    this.getAutoCity = function(add){
+    	var url = $(aInfo.grd).getGridParam('url');
+    	var keyword = $("#txt_city").val();
+    	var country = $("#select_country").multiselect("getChecked").map(function(){ return this.value; }).get();
+    	var state = $("#txt_state").val();
+    	$.getJSON(
+			url,
+			{ 	oper : 'getAutoCity',
+				country: country,
+				state: state,
+				keyword : keyword },
+			function(result){
+                            var suggestions = [];
+                            if(result != null){
+				$.each(result.rows, function(ini, val){
+					suggestions.push(val.name);
+				});
+                            }
+                            add(suggestions);
+		});
+    }
+
+    this.getAutoState = function(add){
+    	var url = $(aInfo.grd).getGridParam('url');
+    	var keyword = $("#txt_state").val();
+    	var country = $("#select_country").multiselect("getChecked").map(function(){ return this.value; }).get();
+    	$.getJSON(
+                    url,
+                    { 	oper : 'getAutoState',
+                            country: country,
+                            keyword : keyword },
+                    function(result){
+                        var suggestions = [];
+                        if(result != null){
+                            $.each(result.rows, function(ini, val){
+                                    suggestions.push(val.name);
+                            });
+                        }
+                        add(suggestions);
+		});
+    }
+
+    this.getAutoZipcode = function(){
+    	var url = $(aInfo.grd).getGridParam('url');
+        var city = $("#txt_city").val();
+    	var state = $("#txt_state").val();
+    	var country = $("#select_country").multiselect("getChecked").map(function(){ return this.value; }).get();
+    	$.getJSON( url, { oper : 'getAutoZipcode',
+                            country: country,
+                            state : state,
+                            city : city },
+                    function(result){
+                        $("#txt_zipcode").val(result.zipcode);
+		});
+    }
+    
+    this.orderDetailGridevent = function(){
+        $(".podRemove").hover(
+                function() {
+                       $(this).css({  'color': 'red' });
+                },
+                function() {
+                        $(this).css({ 'color': 'black' });
+                }
+        ).css({ 'cursor': 'pointer' }).click(function(){
+            var pid = $(this).attr("data-id");
+            var array = [];
+            if(thisClass.objProductOrder != null){
+                $.each(thisClass.objProductOrder, function(ini, val){
+                    if(pid !== val.pid){
+                        array.push(val);
+                    }
+                });
+                thisClass.objProductOrder = array;
+                thisClass.getOrderDetailGrid();
+            }
+        });
+
+        $(".select_orderDetail").change(function(){
+            var pid = $(this).attr("data-id");
+            var thisVal = $(this).val();
+            var array = [];
+            if(thisClass.objProductOrder != null){
+                $.each(thisClass.objProductOrder, function(ini, val){
+                    if(pid == val.pid){
+                        val.qty = thisVal;
+                        val.sumtotal = val.price * thisVal;
+                        array.push(val);
+                    }else{
+                        array.push(val);
+                    }
+                });
+                thisClass.objProductOrder = array;
+                thisClass.getOrderDetailGrid();
+            }
+        });
+    }
+
+    this.orderDetailGridEventAdd = function(){
+        $(".addProduct").click(function(){
+            
+            var pid = $(this).attr("data-id");
+            if(thisClass.objProductAdd != null){
+                $.each(thisClass.objProductAdd, function(ini, val){
+                    if(pid == val.pid){
+                        val.qty = $(".select_addOrderDetail[name='"+pid+"']").val();
+                        val.sumtotal = val.price * val.qty;
+                        //val.qty =
+                        thisClass.objProductOrder.push(val);
+                    }
+                });
+                thisClass.searchAddProduct();
+                thisClass.getOrderDetailGrid();
+            }
+            return false;
+        });
+    }
+
+    this.buildSelectQty = function(qty, pid){
+        var len = 99;
+        var option = '';
+        option += "<select class='select_orderDetail span1' data-id='"+pid+"'>";
+        for (var i=1;i<len;i++)
+        {
+            if(i == qty){
+                option += "<option value='"+i+"' selected>"+i+"</option>";
+            }else{
+                option += "<option value='"+i+"'>"+i+"</option>";
+            }
+        }
+        option += "</select>";
+        return option;
+    }
+
+    this.buildSelectAddQty = function(qty, pid){
+        var len = 99;
+        var option = '';
+        option += "<select class='select_addOrderDetail span1' name='"+pid+"'>";
+        for (var i=1;i<len;i++)
+        {
+            if(i == qty){
+                option += "<option value='"+i+"' selected>"+i+"</option>";
+            }else{
+                option += "<option value='"+i+"'>"+i+"</option>";
+            }
+        }
+        option += "</select>";
+        return option;
+    }
+
+    this.getOrderDetailGrid = function(){
+        $(".detail_grid").remove();
+        var tr = '';
+        var i = 0;
+        var subtotal = 0;
+        var weightTotal = 0;
+        if(thisClass.objProductOrder != null){
+            
+            $.each(thisClass.objProductOrder, function(ini, val){
+                subtotal += val.price * val.qty;
+                weightTotal += val.weight * val.qty;
+                tr +=  "<tr class='detail_grid'>";
+                tr += "<td>"+val.barcode+"</td>";
+                tr += "<td>"+val.name_th+"</td>";
+                tr += "<td>"+val.price+"</td>";
+                tr += "<td>"+thisClass.buildSelectQty(val.qty, val.pid)+"</td>";
+                tr += "<td>"+val.sumtotal+"</td>";
+                tr += "<td><i class='icon-remove podRemove' data-id='"+val.pid+"'></i></td>";
+                tr += "</tr>";
+            });
+        }
+        $(tr).insertBefore(".orderdail_tr");
+        $("#txt_subtotal").val(subtotal);
+        
+        thisClass.getRatePrice(subtotal, weightTotal);
+        thisClass.orderDetailGridevent();
+    }
+    
+
+    this.getRatePrice = function(subtotal, weight){
+        var url = $(aInfo.grd).getGridParam('url');
+    	$.getJSON(
+                    url,
+                    { 	oper : 'getRatePrice',
+                        subtotal : subtotal,
+                        city : $("#txt_city").val(),
+                        state : $("#txt_state").val(),
+                        country : $("#select_country").val(),
+                        weight : weight,
+                    	shipment_id : $("#select_shipment_id").val()},
+                    function(result){
+                        var grandtotal = subtotal + result;
+                        $("#txt_shipprice").val(result);
+                        $("#txt_grandtotal").val(grandtotal);
+		});
+    }
+    
+    this.gridOrderDetail = function(id){
+        var url = $(aInfo.grd).getGridParam('url');
+        var tr = '';
+    	$.getJSON(
+                    url,
+                    { 	oper : 'gridOrderDetail',
+                    	orderid : id},
+                    function(result){
+                        thisClass.objProductOrder = [];
+                        $(".detail_grid").remove();
+                        if(result != null){
+                            thisClass.objProductOrder = result.rows;
+                            if(thisClass.objProductOrder != null){
+                                $.each(thisClass.objProductOrder, function(ini, val){
+                                    tr +=  "<tr class='detail_grid'>";
+                                    tr += "<td>"+val.barcode+"</td>";
+                                    tr += "<td>"+val.name_th+"</td>";
+                                    tr += "<td>"+val.price+"</td>";
+                                    tr += "<td>"+thisClass.buildSelectQty(val.qty, val.pid)+"</td>";
+                                    tr += "<td>"+val.sumtotal+"</td>";
+                                    tr += "<td><i class='icon-remove podRemove' data-id='"+val.pid+"'></i></td>";
+                                    tr += "</tr>";
+                                });
+                                $(tr).insertBefore(".orderdail_tr");
+                            }
+                            thisClass.orderDetailGridevent();
+                        }
+		});
+    }
+
+    this.searchAddProduct = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+        var tr = '';
+        var pid = [];
+        if(thisClass.objProductOrder != null){
+            $.each(thisClass.objProductOrder, function(ini, val){
+                pid.push(val.pid);
+            });
+        }
+        
+    	$.getJSON(
+                    url,
+                    { 	oper : 'searchAddProduct',
+                        pid : pid,
+                    	search_barcode : $("#search_barcode").val(),
+                        search_name : $("#search_name").val()},
+                    function(result){
+                        $(".detail_add_grid").remove();
+                        if(result != null){
+                            thisClass.objProductAdd = result.rows;
+                            $.each(result.rows, function(ini, val){
+                                tr +=  "<tr class='detail_add_grid'>";
+                                tr += "<td>"+val.barcode+"</td>";
+                                tr += "<td>"+val.name_th+"</td>";
+                                tr += "<td>"+val.price+"</td>";
+                                tr += "<td>"+thisClass.buildSelectAddQty(val.qty, val.pid)+"</td>";
+                                tr += "<td><a href='#'class='addProduct' data-id='"+val.pid+"'><i class='icon-plus-sign'></i> add</a></td>";
+                                tr += "</tr>";
+                            });
+                            $(".orderdetail_search").append(tr);
+                            
+                            thisClass.orderDetailGridEventAdd();
+                        }
+		});
+    }
+
+    this.exportPdf = function(){
+        var orderid = $("#txt_id").val();
+        window.open('./export/'+ aInfo.classname.replace(/_/g,'-').toLowerCase() + '.php?order_id='+orderid+"&type=pdf",'_newtab' );
+        window.focus();
+    }
+
+    this.exportExcel = function(){
+        var orderid = $("#txt_id").val();
+        location.href = './export/'+ aInfo.classname.replace(/_/g,'-').toLowerCase() + '.php?order_id='+orderid+"&type=excel";
+    }
+    
+    this.initEvent = function(){
+        thisClass.ctrlSave(formId, 'pnlGrid{$variable_el}');
+        $("#btnClose{$variable_el}").click(function(){
+        	thisClass.openPnlGrid('pnlGrid{$variable_el}');
+        });
+        $("#btnSave{$variable_el}").click(function() {
+        	thisClass.initValidateFormEvent();
+            if(thisClass.submitForm){ thisClass.saveData(); }
+		});
+        $("#btnSaveBack{$variable_el}").click(function() {
+			thisClass.initValidateFormEvent();
+            if(thisClass.submitForm){
+	            if(thisClass.saveData()){
+	                thisClass.openPnlGrid('pnlGrid{$variable_el}');
+	                thisClass.submitForm = false;
+	            }
+            }
+        });
+
+        $("#btnPdf{$variable_el}").click(function() {
+            thisClass.exportPdf();
+        });
+
+        $("#btnExcel{$variable_el}").click(function() {
+            thisClass.exportExcel();
+        });
+
+        $('#btnDelete{$variable_el}').click(function(){
+            var ids = jQuery(aInfo.grd).getGridParam('selarrrow');
+            if(ids.length == 0){
+                showMessage('{$smarty.const.MSG_NOT_SELECT}', true);
+                return;
+            }
+            thisClass.confirmDlg(msg_delconfirm, msg_delcaption, ids);
+        });
+
+
+        $('#btnAdd{$variable_el}').click(function(){
+            if(thisClass.isDetail==false){
+                thisClass.popContainAddEdit('add');
+                $('#masterDetail').hide();
+            }else{
+                window.location.href = aInfo.classname.toLowerCase() + '?editID=';
+            }
+        });
+
+        $("#period_preset").change(function(){
+            thisClass.gridReload();
+        });
+
+        $('#period_start').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat: 'd MM yy',
+            monthNamesShort: aInfo.month,
+            onSelect: function(dateText, inst) {
+            	$('.navbar-search[name="{$variable_el}"]').val('');
+                thisClass.gridReload();
+                var strFrom = $('#period_start').val();
+                var arr = strFrom.split(' ');
+                $(this).val(arr[0] + ' ' + aInfo.month[$(this).datepicker('getDate').getMonth() + 1] + ' ' + arr[2]);
+            }
+        });
+
+        $('#period_end').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat: 'd MM yy',
+            monthNamesShort: aInfo.month,
+            onSelect: function(dateText, inst) {
+                $('.navbar-search[name="{$variable_el}"]').val('');
+                thisClass.gridReload();
+                var strFrom = $('#period_end').val();
+                var arr = strFrom.split(' ');
+                $(this).val(arr[0] + ' ' + aInfo.month[$(this).datepicker('getDate').getMonth() + 1] + ' ' + arr[2]);
+            }
+        });
+        
+        $( "#txt_city" ).autocomplete({
+		source: function(req, add){
+			thisClass.getAutoCity(add);
+                }
+        });
+
+        $( "#txt_state" ).autocomplete({
+		source: function(req, add){
+			thisClass.getAutoState(add);
+                }
+        });
+
+        $( "#txt_zipcode" ).focus(function(){
+        	if($(this).val() == ''){
+        		thisClass.getAutoZipcode();
+        	}
+        });
+
+        $("#select_shipment_id").change(function(){
+            thisClass.getOrderDetailGrid();
+        });
+
+        $("#txt_subtotal").keypress(function(){
+            return false;
+        });
+        $("#txt_shipprice").keypress(function(){
+            return false;
+        });
+        $("#txt_grandtotal").keypress(function(){
+            return false;
+        });
+
+        $("#search_barcode").change(function(){
+            $("#search_name").val('');
+            thisClass.searchAddProduct();
+        });
+
+        $("#search_name").change(function(){
+            $("#search_barcode").val('');
+            thisClass.searchAddProduct();
+        });
+
+        //$('.search-query[name="{$variable_el}"]').keyup(function(){ thisClass.gridReload(); });
+        $('.navbar-search[name="{$variable_el}"]').submit(function(){ thisClass.gridReload(); return false; });
+
+
+        this.setButtonUI('.btndiv');
+        thisClass.jqGrid();
+
+        thisClass.initValidateForm(formId, rule);
+        if(!aInfo.isDetail){
+        thisClass.getSelectCountry();
+        thisClass.getSelectShipment();
+        thisClass.getSelectPayment();
+        thisClass.getSelectOrderstatus();
+        }
+        
+        
+        $(window).resize(this.fitTable);
+        this.fitTable();
+    }
+
+    thisClass.initEvent();
+}
+
+var grd{$variable_el}
+jQuery(document).ready(function(){
+
+    grd{$variable_el} = new MGMT{$variable_el}({$aInfo});
+
+
+});
+</script>

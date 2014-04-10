@@ -1,0 +1,930 @@
+{include file="grid-wrapper.inc.html"}
+<script  type="text/javascript">
+    MGMT{$variable_el}.prototype = new GridBase();
+
+    function MGMT{$variable_el}(aInfo){
+
+        this.constructor(aInfo);
+        this.grid;
+        var thisClass = this;
+        this.hideMid = [];
+        this.hideLarge = [];
+        this.objProductOrder = [];
+        this.objProductAdd = [];
+        var formId = "#frm{$variable_el}";
+        var rule = {
+            txt_bill_number:{
+                required: true,
+            },
+            txt_bill_date:{
+                required: true,
+            },
+        };
+
+        this.dataSearch = function()
+        {
+            var supply_ids = checkboxChecked("input[name='multiselect_filter_supply{$variable_el}']:checked");
+            var keyword = $(".search-query").val();
+            var period_start = $("#period_start").val();
+            var period_end = $("#period_end").val();
+            var oData = { q:aInfo.classname,
+                oper:"search",
+                period_start: period_start,
+                period_end: period_end,
+                keyword: keyword,
+                supply_id: supply_ids
+            };
+            jQuery.extend(oData, this.optSearch);
+            //$(aInfo.grd).setPostData(oData);
+            $(aInfo.grd).jqGrid('setGridParam',{ postData: null });
+            $(aInfo.grd).jqGrid('setGridParam',{ postData:oData })
+            //clear param
+            //$(aInfo.grd).jqGrid().setGridParam({ url : 'processajax.php?q=' + aInfo.classname +'&nd='+new Date().getTime()+'&fileclass='+ aInfo.fileclass })
+        }
+
+        this.saveData = function()
+        {
+            var url = $(aInfo.grd).getGridParam('url');
+
+            var pk_id = this.hdnID;
+            var objTxt = this.getTxt();
+            var objChk = this.getChk();
+            var objSel = this.getSelect();
+            var oper;
+                
+            if($.trim(pk_id)!=''){
+                oper = 'edit';
+            }else{
+                oper = 'add';
+            }
+
+
+            var o_data = { oper : oper, pk_id : pk_id, json: JSON.stringify(thisClass.objProductBill) };
+
+            jQuery.extend(o_data, objTxt, objChk, objSel);
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                dataType: "json",
+                //async: false,
+                data:o_data,
+                success: function(data)
+                {
+                    thisClass.hdnID = data.id;
+                    thisClass.clearBlock(oper,data.error);
+                    thisClass.gridReload();
+                    $('#pnlAddEdit').css('position', 'static');
+                },
+                error: function(response) {
+                    thisClass.hdnID = '';
+                    //$('#pnlAddEdit').unblock();
+                    $('#pnlAddEdit').pnlAddEdit("close");
+                    if(isExpire(response.responseText)) return;
+                }
+            });
+
+            return true;
+            //}else return false
+        }
+
+        this.excuteFN = function(ids){
+            $(aInfo.grd).jqGrid('setGridParam',{ postData:{ 'oper':'del', 'ids':ids } });
+            $(aInfo.grd).trigger("reloadGrid");
+        }
+
+        this.jqGrid = function(){
+            thisClass.grid = jQuery(aInfo.grd).jqGrid({
+                url: this.setGrdParam(),
+                datatype: 'json',
+                colNames: aInfo.colN,
+                colModel: aInfo.colM,
+                rowNum:60,
+                rowList:[20,40,60],
+                pager: jQuery(aInfo.pgrd),
+                sortname: aInfo.initSortName,
+                viewrecords: true,
+                sortorder: "desc",
+                caption: aInfo.g_caption,
+                editurl: this.setGrdParam(),
+                width:$('.pnlContainer').width(),
+                height:'auto',
+                rownumbers: false,
+                multiboxonly: true,
+                hoverrows:false,
+                loadBeforeSend: function(xhr){
+                    thisClass.setInputSize();
+                },
+                loadError : function(res,st,err) {
+                    if(isExpire(res.responseText)) return;
+                    thisClass.initialControl();
+                },
+                loadComplete : function(res) {
+
+                    if($(aInfo.grd).getGridParam('records')>0){
+                        var totals = $(aInfo.grd).getGridParam('records');
+                        var rowPerPage = $(aInfo.grd).getGridParam('rowNum');
+                        var page = $(aInfo.grd).getGridParam("page");
+                        if(totals > (rowPerPage*page)){
+                            $(aInfo.grd).setGridHeight('auto');
+                        }
+                        else {
+                            if(totals - (rowPerPage*(page-1) ) > 0){
+                                $(aInfo.grd).setGridHeight('auto');
+                            }
+                            else
+                                $(aInfo.grd).setGridHeight('auto');
+                        }
+                    }
+                    else
+                    {
+                        $(aInfo.grd).setGridHeight('auto');
+                    }
+
+                    thisClass.setButtonUI('.btnAction');
+                    $('.activestatus').addClass('ui-corner-all');
+                    $('.activestatus').addClass('ui-state-hover');
+                    $('.activestatus').css('background', 'none');
+                    $('.activestatus').css('border', 'none');
+                    $('.activestatus').css('cursor', 'pointer');
+                    thisClass.editData = false;
+                    thisClass.initialControl();
+                    return;
+                },
+                ondblClickRow:function(id){
+                    thisClass.editAction(id);
+                },
+                afterInsertRow: function(rowid, rowdata){
+                    $('#btnEdit{$variable_el}'+rowid).click(function(){
+                        thisClass.editAction(rowid);
+                    });
+
+                    $('#btnActive{$variable_el}'+rowid).click(function(){
+                        thisClass.editStatus('is_active', rowid);
+                    });
+
+                    $('#btnDelete{$variable_el}'+rowid).click(function(){
+                        thisClass.editStatus('is_delete', rowid);
+                    });
+                }
+            });
+        }
+
+        this.editAction = function(id){
+            if(this.isDetail==false){
+                var ret = $(aInfo.grd).getRowData(id);
+                this.popContainAddEdit('edit', id, ret.group_name);
+            }else{
+                window.location.href = aInfo.classname.replace(/_/g,'-').toLowerCase() + '?editID='+id;
+            }
+        }
+
+
+        this.popContainAddEdit = function (oper, pk_id, title){
+            this.blockUI();
+            this.closePnlGrid('pnlGrid{$variable_el}');
+            this.hdnID = '';
+
+            if(title==undefined)
+                title = '';
+
+            this.clearChk();
+            this.clearTxt();
+
+            if(oper=='edit'){
+                this.hdnID = pk_id;
+                $("#masterDetail").show();
+            }else{
+                thisClass.objProductBill =null;
+                $("#txt_discount").val(0);
+                $("#txt_vat_value").val(0);
+                $("#txt_vat").val(0);
+                $("#txt_grandtotal").val(0);
+
+                $("#chk_discount_percent").prop("checked", false);
+                $("#chk_includevat").prop("checked", false);
+            }
+            thisClass.resetValidatForm(formId);
+            this.loadData();
+
+            $('.noBreadcrumb .label').text(this.breadCrumbLabel + ' - ' + title);
+        }
+    
+        this.checkCallOutside = function(){
+            //reference Out Side
+            if(this.refOper=='edit'){
+                this.editAction(this.editID);
+            }else if(this.refOper=='add')
+                $('#btnAdd{$variable_el}').click();
+        
+            this.refOper = 'default'; //clear;
+            return;
+        }
+
+        this.loadData = function(){
+            var url = $(aInfo.grd).getGridParam('url');
+            $.ajax({
+                type: "POST",
+                url: url,
+                dataType: "json",
+                data:{ pk_id:thisClass.hdnID, oper:'loadData' },
+                success: function(data){
+                    thisClass.bindTxt(data);
+                    thisClass.bindChk(data);
+                    thisClass.bindSelect(data);
+
+                    $("#select_supply_id").multiselect('refresh');
+                        
+                    thisClass.gridBillDetail(thisClass.hdnID);
+                    thisClass.unblockUI();
+                    thisClass.editData = true;
+                    MGMTKt_Supply.prototype.optSearch = { supply_id:data.supply_id }
+                    
+                    if(grdKt_Supply!=undefined){
+                        console.log(grdKt_Supply);
+                        grdKt_Supply.gridReload();
+                    }
+                        
+                },
+                error: function(response) {
+                    if(isExpire(response.responseText)) return;
+                }
+            });
+        }
+    
+        this.gridFilter = function(){
+            $(".search-query").val('');
+            thisClass.dataSearch();
+            $(aInfo.grd).setGridParam({ page:1 });
+            $(aInfo.grd).setGridParam({ datatype:'json'});
+            $(aInfo.grd).trigger("reloadGrid");
+        }
+
+        this.billAllCalculate = function(CASE, pid, thisVal){
+            var array = [];
+            if(thisClass.objProductBill != null){
+                switch(CASE)
+                {
+                    case "PRICE":
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid == val.pid){
+                                val.price = thisVal;
+                                array.push(val);
+                            }else{
+                                array.push(val);
+                            }
+                        });
+                        break;
+
+                    case "PACKUNIT":
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid == val.pid){
+                                val.pack_unit = thisVal;
+                                val.pack_cost = val.cost * thisVal;
+                                val.sumtotal = val.pack_cost * val.qty;
+                                array.push(val);
+                            }else{
+                                array.push(val);
+                            }
+                        });
+                        break;
+                    case "QTY":
+                        var packCost;
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid == val.pid){
+                                if(val.pack_cost == null){
+                                    packCost = val.cost;
+                                }else{
+                                    packCost = val.pack_cost;
+                                }
+                                val.qty = thisVal;
+                                val.sumtotal = packCost * val.qty;
+                                array.push(val);
+                            }else{
+                                array.push(val);
+                            }
+                        });
+                        break;
+                    case "COST":
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid == val.pid){
+                                val.cost = thisVal;
+                                val.pack_unit = $(".select_packUnit_billDetail[name='"+pid+"']").val();
+                                val.pack_cost = $(".select_packUnit_billDetail[name='"+pid+"']").val() * thisVal;
+                                val.sumtotal = val.pack_cost * val.qty;
+                                array.push(val);
+                            }else{
+                                array.push(val);
+                            }
+                        });
+                        break;
+                    case "PACKCOST":
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid == val.pid){
+                                val.pack_cost = thisVal;
+                                val.cost = thisVal / $(".select_packUnit_billDetail[name='"+pid+"']").val();
+                                val.sumtotal = val.pack_cost * val.qty;
+                                array.push(val);
+                            }else{
+                                array.push(val);
+                            }
+                        });
+                        break;
+                    case "TOTAL":
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid == val.pid){
+                                val.sumtotal = thisVal;
+                                val.pack_cost = thisVal / $(".select_qty_billDetail[name='"+pid+"']").val();
+                                val.cost = thisVal / ($(".select_packUnit_billDetail[name='"+pid+"']").val() * $(".select_qty_billDetail[name='"+pid+"']").val());
+                                array.push(val);
+                            }else{
+                                array.push(val);
+                            }
+                        });
+                        break;
+                    case "MFD":
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid == val.pid){
+                                val.mfd = thisVal;
+                                array.push(val);
+                            }else{
+                                array.push(val);
+                            }
+                        });
+                        break;
+                    case "EXP":
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid == val.pid){
+                                val.exp = thisVal;
+                                array.push(val);
+                            }else{
+                                array.push(val);
+                            }
+                        });
+                        break;
+                    case "VATINCLUDE":
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid == val.pid){
+                                if(thisVal)
+                                    val.vat_include = "Y";
+                                else
+                                    val.vat_include = "N";
+                            
+                                array.push(val);
+                            }else{
+                                array.push(val);
+                            }
+                        });
+                        break;
+                }
+                thisClass.objProductBill = array;
+                thisClass.getBillDetailGrid();
+            }
+        
+        }
+
+        this.billDetailGridevent = function(){
+            $(".podRemove").unbind("hover").unbind("click");
+            $(".podRemove").hover(
+                function() {
+                    $(this).css({  'color': 'red' });
+                },
+                function() {
+                    $(this).css({ 'color': 'black' });
+                }
+            ).css({ 'cursor': 'pointer' }).click(function(){
+                    var pid = $(this).attr("data-id");
+                    var array = [];
+                    if(thisClass.objProductBill != null){
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            if(pid !== val.pid){
+                                array.push(val);
+                            }
+                        });
+                        thisClass.objProductBill = array;
+
+                        $(".detail_grid[data-id='"+pid+"']").remove();
+                        thisClass.getBillDetailGrid();
+                    }
+                });
+
+            $("#txt_total, #txt_vat, #txt_grandtotal").unbind("keydown").keydown(function(){
+                return false;
+            });
+            
+            $("#txt_discount").unbind("change").change(function(){
+                //thisClass.billAllDetail();
+                thisClass.getBillDetailGrid();
+            }).unbind("blur").blur(function(){
+                if($(this).val() == '')
+                    $(this).val(0);
+            });
+        
+            $("#chk_discount_percent").unbind("change").change(function(){
+                thisClass.getBillDetailGrid();
+            });
+        
+            $("#chk_includevat").unbind("change").change(function(){
+                thisClass.getBillDetailGrid();
+            });
+
+            $('.datepicker').datepicker({
+                //numberOfMonths: 3,
+                changeMonth: true,
+                changeYear: true,
+                //showButtonPanel: true,
+                dateFormat: 'yy-mm-d'
+            });
+        
+            $(".select_packUnit_billDetail").unbind("change").change(function(){
+                var pid = $(this).attr('name');
+                var thisVal = $(this).val();
+                thisClass.billAllCalculate("PACKUNIT", pid, thisVal);
+            });
+        
+            $(".select_qty_billDetail").unbind("change").change(function(){
+                var pid = $(this).attr('name');
+                var thisVal = $(this).val();
+                thisClass.billAllCalculate("QTY", pid, thisVal);
+            });
+
+            $(".input_price_billDetail").unbind("change").change(function(){
+                var pid = $(this).attr('name');
+                var thisVal = $(this).val();
+                thisClass.billAllCalculate("PRICE", pid, thisVal);
+            });
+        
+            $(".input_cost_billDetail").unbind("change").change(function(){
+                var pid = $(this).attr('name');
+                var thisVal = $(this).val();
+                thisClass.billAllCalculate("COST", pid, thisVal);
+            });
+        
+            $(".input_pack_cost_billDetail").unbind("change").change(function(){
+                var pid = $(this).attr('name');
+                var thisVal = $(this).val();
+                thisClass.billAllCalculate("PACKCOST", pid, thisVal);
+            });
+
+            $(".input_total_billDetail").unbind("change").change(function(){
+                var pid = $(this).attr('name');
+                var thisVal = $(this).val();
+                thisClass.billAllCalculate("TOTAL", pid, thisVal);
+            });
+
+            $(".input_mfd_billDetail").unbind("change").change(function(){
+                var pid = $(this).attr('name');
+                var thisVal = $(this).val();
+                thisClass.billAllCalculate("MFD", pid, thisVal);
+            });
+
+            $(".input_exp_billDetail").unbind("change").change(function(){
+                var pid = $(this).attr('name');
+                var thisVal = $(this).val();
+                thisClass.billAllCalculate("EXP", pid, thisVal);
+            });
+
+            $(".input_vatinclude_billDetail").unbind("change").change(function(){
+                var pid = $(this).attr('name');
+                var thisVal = $(this).prop("checked");
+                thisClass.billAllCalculate("VATINCLUDE", pid, thisVal);
+            });
+
+  
+        }
+    
+        this.getSupplyFilter = function(){
+            var url = $(aInfo.grd).getGridParam('url');
+            $.getJSON(
+            url,
+            { oper : 'getSupplyFilter' },
+            function(result){
+                thisClass.objSupply = result;
+                thisClass.setSelectSupply("#select_supply_id", false, 1);
+                thisClass.setSelectSupply("#filter_supply{$variable_el}", true,3, thisClass.gridFilter );
+                thisClass.gridReload();
+            });
+        }
+    
+        this.setSelectSupply = function(id, multiple, selectedList, callbackFunction){
+            var option = '';
+            result = thisClass.objSupply;
+
+            $.each(result.rows, function(ini, val){
+                option += '<option value="'+val.id+'">'+val.name+'</option>';
+            });
+            $(id).append(option);
+		
+            $(id).multiselect(
+            {
+                multiple: multiple,
+                noneSelectedText: 'Select Supply',
+                selectedList: selectedList,
+                create: function(){
+                    if(multiple){
+                        $(id).next().css('width', '');
+                        $(id).next().addClass('span12');
+                    }
+                },
+                close: function(){
+                    if(callbackFunction != undefined){
+                        callbackFunction();
+                    }
+                }
+            }).multiselectfilter();
+            $(id).multiselect("uncheckAll");
+        }
+
+        this.buildINPUT = function(CASE, value, pid){
+            var len = 200;
+            var input = '';
+            var checked = '';
+            if(value == undefined) value = '';
+            
+            switch(CASE)
+            {
+                case "MFD":
+                    input = "<input type='text' class='input_mfd_billDetail datepicker input-mini' value='"+value+"' name='"+pid+"'  placeholder='{$smarty.const.MSG_MFD}'>";
+                    break;
+                case "EXP":
+                    input = "<input type='text' class='input_exp_billDetail datepicker input-mini' value='"+value+"' name='"+pid+"' placeholder='{$smarty.const.MSG_EXP}'>";
+                    break;
+                case "PRICE":
+                    input = "<input type='text' class='input_price_billDetail span1' value='"+value+"' name='"+pid+"'>";
+                    break;
+                case "COST":
+                    input = "<input type='text' class='input_cost_billDetail span1' value='"+value+"' name='"+pid+"'>";
+                    break;
+                case "PACKCOST":
+                    input = "<input type='text' class='input_pack_cost_billDetail span1' value='"+value+"' name='"+pid+"'>";
+                    break;
+                case "TOTAL":
+                    input = "<input type='text' class='input_total_billDetail span1' value='"+value+"' name='"+pid+"'>";
+                    break;
+                case "QTY":
+                    input = "<select class='select_qty_billDetail span1' name='"+pid+"'>";
+                    for (var i=1;i<=len;i++)
+                    {
+                        if(i == value) input += "<option value='"+i+"' selected>"+i+"</option>";
+                        else input += "<option value='"+i+"'>"+i+"</option>";
+                    }
+                    input += "</select>";
+                    break;
+                case "ADDQTY":
+                    input += "<select class='select_addOrderDetail span1' name='"+pid+"'>";
+                    for (var i=1;i<=len;i++)
+                    {
+                        if(i == value)
+                            input += "<option value='"+i+"' selected>"+i+"</option>";
+                        else
+                            input += "<option value='"+i+"'>"+i+"</option>";
+                    }
+                    input += "</select>";
+                case "PACKUNIT":
+                    input += "<select class='select_packUnit_billDetail span1' name='"+pid+"'>";
+                    for (var i=1;i<=len;i++)
+                    {
+                        if(i == value) input += "<option value='"+i+"' selected>"+i+"</option>";
+                        else input += "<option value='"+i+"'>"+i+"</option>";
+                    }
+                    input += "</select>";
+                    break;
+                case "VATINCLUDE":
+                    if(value == 'Y') checked = "checked";
+                    input = "<input type='checkbox' class='input_vatinclude_billDetail span1' name='"+pid+"' "+checked+">";
+                    break;
+
+            }
+            return input;
+        }
+
+        this.export_xls = function(){
+            var postdata = jQuery(aInfo.grd).getGridParam('postData');
+            var  para = './export/kt-order.php?type=excel&nd='+new Date().getTime();
+            $.each(postdata, function(key, value) {
+                para += "&"+key+"="+encodeURIComponent(value);
+            });
+            location.href = para;
+
+        }
+
+        this.export_pdf = function(){
+            var postdata = jQuery(aInfo.grd).getGridParam('postData');
+            var  para = './export/kt-order.php?type=pdf&nd='+new Date().getTime();
+            $.each(postdata, function(key, value) {
+                para += "&"+key+"="+encodeURIComponent(value);
+            })
+            var myWindow=window.open('','',
+            'location=no,resizable=yes,directories=no,fullscreen=yes,'+
+                'location=no,menubar=no,scrollbars=no,status=no,titlebar=no,toolbar=no')
+            myWindow.location.href = para;
+            myWindow.focus();
+        }
+
+
+        this.buildSelectAddQty = function(qty, pid){
+            var len = 200;
+            var option = '';
+            option += "<select class='select_addOrderDetail span1' name='"+pid+"'>";
+            for (var i=1;i<=len;i++)
+            {
+                if(i == qty){
+                    option += "<option value='"+i+"' selected>"+i+"</option>";
+                }else{
+                    option += "<option value='"+i+"'>"+i+"</option>";
+                }
+            }
+            option += "</select>";
+            return option;
+        }
+    
+        this.getBillDetailGrid = function(){
+            var tr = '';
+            var i = 0;
+            var subtotal = 0;
+            var subtotal_ex_vat = 0;
+            var weightTotal = 0;
+            var packCost;
+            var subtotalAll = 0;
+            var total_discount = 0;
+            if(thisClass.objProductBill != null){
+                $.each(thisClass.objProductBill, function(ini, val){
+                    if(val.vat_include == "Y")
+                        subtotal += parseFloat(val.sumtotal);
+                    else if(val.vat_include == "N")
+                        subtotal_ex_vat += parseFloat(val.sumtotal);
+                    
+                    thisClass.getValueGridBillDetail(val);
+                });
+            }
+            $(tr).insertBefore(".billdetail_tr");
+            subtotalAll = subtotal+subtotal_ex_vat;
+
+            $("#txt_total").val(subtotalAll.toFixed(2));
+
+            var discount = $("#txt_discount").val();
+            var vat = $("#txt_vat_value").val();
+            var vatValue = 0;
+            var grandtotal;
+            $("#txt_vat").val('0');
+
+            if($("#chk_discount_percent").is(':checked')){
+                subtotal = subtotal - (subtotal * discount /100);
+            }else{
+                subtotal = subtotal - discount;
+            }
+
+            if($("#chk_includevat").is(':checked')){
+                vatValue = subtotal * vat /100;
+            }
+            $("#txt_vat").val(vatValue.toFixed(2));
+
+            grandtotal = subtotal + vatValue +subtotal_ex_vat;
+            $("#txt_grandtotal").val(grandtotal.toFixed(2));
+
+        }
+
+        this.buidTrGridBillDetail = function(val){
+            var tr;
+            var packCost;
+            if(val.pack_cost == null){
+                packCost = val.cost;
+            }else{
+                packCost = val.pack_cost;
+            }
+            tr =  "<tr class='detail_grid' data-id='"+val.pid+"'>";
+            tr += "<td data-label='barcode' data-id='"+val.pid+"'>"+val.barcode+"</td>";
+            tr += "<td data-label='product' data-id='"+val.pid+"'>"+val.name+"</td>";
+            tr += "<td>"+thisClass.buildINPUT("MFD",val.mfd, val.pid)+"</br>"+thisClass.buildINPUT("EXP",val.exp, val.pid)+"</td>";
+            tr += "<td>"+thisClass.buildINPUT("PRICE",val.price, val.pid)+"</td>";
+            tr += "<td>"+thisClass.buildINPUT("COST",val.cost, val.pid)+"</td>";
+            tr += "<td>"+thisClass.buildINPUT("PACKUNIT",val.pack_unit, val.pid)+"</td>";
+            tr += "<td>"+thisClass.buildINPUT("PACKCOST",packCost, val.pid)+"</td>";
+            tr += "<td>"+thisClass.buildINPUT("QTY",val.qty, val.pid)+"</td>";
+            tr += "<td>"+thisClass.buildINPUT("TOTAL",val.sumtotal,val.pid)+"</td>";
+            tr += "<td>"+thisClass.buildINPUT("VATINCLUDE",val.vat_include,val.pid)+"</td>";
+            tr += "<td><i class='icon-remove podRemove' data-id='"+val.pid+"'></i></td>";
+            tr += "</tr>";
+            $(tr).insertBefore(".billdetail_tr");
+        }
+
+        this.getValueGridBillDetail = function(val){
+            var vat = $("#txt_vat_value").val();
+            if(val.pack_cost == null){
+                packCost = val.cost;
+            }else{
+                packCost = val.pack_cost;
+            }
+            if(val.vat_include == "Y"){
+                if($("#chk_includevat").is(':checked')){
+                    cost = (parseFloat(val.cost) + (parseFloat(val.cost) * parseFloat(vat) /100)).toFixed(2);
+                    packCost = (parseFloat(packCost) + (parseFloat(packCost) * parseFloat(vat) /100)).toFixed(2);
+                    //sumtotal = (parseFloat(val.sumtotal) + (parseFloat(val.sumtotal) * parseFloat(vat) /100)).toFixed(2);
+                }else{
+                    cost = parseFloat(val.cost).toFixed(2);
+                    //sumtotal = parseFloat(val.sumtotal).toFixed(2);
+                }
+            }else if(val.vat_include == "N"){
+                cost = parseFloat(val.cost).toFixed(2);
+                //sumtotal = parseFloat(val.sumtotal).toFixed(2);
+            }
+			sumtotal = parseFloat(val.sumtotal).toFixed(2);
+
+            //$(".detail_grid[data-id='"+val.pid+"'] td[data-label='barcode']").text(val.barcode);
+            $(".input_price_billDetail[name='"+val.pid+"']").val(val.price);
+
+            $(".input_cost_billDetail[name='"+val.pid+"']").val(cost);
+            $(".input_pack_cost_billDetail[name='"+val.pid+"']").val(packCost);
+            $(".input_total_billDetail[name='"+val.pid+"']").val(sumtotal);
+        }
+
+        this.gridBillDetail = function(id){
+            var url = $(aInfo.grd).getGridParam('url');
+            var tr = '';
+            $.getJSON(
+            url,
+            { 	oper : 'gridBillDetail',
+                billid : id},
+            function(result){
+                $(".detail_grid").remove();
+                if(result != null){
+                    thisClass.objProductBill = result.rows;
+                    if(thisClass.objProductBill != null){
+                        $.each(thisClass.objProductBill, function(ini, val){
+                            thisClass.buidTrGridBillDetail(val);
+                        });
+                    }
+                    thisClass.getBillDetailGrid();
+                    thisClass.billDetailGridevent();
+                }
+            }).error(function(xhr, status, error) {
+                alert('Error occur. Please contact the administrator.');
+            });
+        }
+    
+        this.billDetailGridEventAdd = function(){
+            $(".addProduct").unbind("click").click(function(){
+            
+                var pid = $(this).attr("data-id");
+                if(thisClass.objProductAdd != null){
+                    $.each(thisClass.objProductAdd, function(ini, val){
+                        if(pid == val.pid){
+                            thisClass.buidTrGridBillDetail(val);
+                            
+                            val.qty = $(".select_addOrderDetail[name='"+pid+"']").val();
+                            val.sumtotal = val.price * val.qty;
+                            
+                            if(thisClass.objProductBill !== null && thisClass.objProductBill !== undefined)
+                                thisClass.objProductBill.push(val);
+                            else
+                                thisClass.objProductBill = [val];
+                        }
+                    });
+                    thisClass.billDetailGridevent();
+                    thisClass.getBillDetailGrid();
+                }
+                return false;
+            });
+
+        }
+
+        this.searchAddProduct = function(){
+            var url = $(aInfo.grd).getGridParam('url');
+            var tr = '';
+        
+            $.getJSON(
+            url,
+            { 	oper : 'searchAddProduct',
+                search_keyword : $("#search_keyword").val()
+            },
+            function(result){
+                $("#search_keyword").val('');
+                $(".detail_add_grid").remove();
+                if(result != null){
+                    thisClass.objProductAdd = result.rows;
+                    $.each(result.rows, function(ini, val){
+                        tr =  "<tr class='detail_add_grid'>";
+                        tr += "<td>"+val.barcode+"</td>";
+                        tr += "<td>"+val.name+"</td>";
+                        tr += "<td>"+val.price+"</td>";
+                        tr += "<td>"+thisClass.buildINPUT("ADDQTY",val.qty, val.pid)+"</td>";
+                        tr += "<td><button href='#'class='addProduct btn' data-id='"+val.pid+"'><i class='icon-plus-sign'>add</i></button></td>";
+                        tr += "</tr>";
+                        $(".orderdetail_search").append(tr);
+                    });
+
+                    thisClass.billDetailGridEventAdd();
+                }
+            }).error(function(xhr, status, error) {
+                alert('Error occur. Please contact the administrator.');
+            });
+        }
+    
+        this.initEvent = function(){
+            thisClass.ctrlSave(formId, 'pnlGrid{$variable_el}');
+        
+            $("#btnClose{$variable_el}").click(function(){
+                thisClass.openPnlGrid('pnlGrid{$variable_el}');
+            });
+            $("#btnSave{$variable_el}").click(function() {
+                thisClass.initValidateFormEvent(formId);
+                if (thisClass.submitForm){
+                    thisClass.saveData();
+                }
+            });
+            $("#btnSaveBack{$variable_el}").click(function() {
+                thisClass.initValidateFormEvent(formId);
+                if (thisClass.submitForm){
+                    if (thisClass.saveData()){
+                        thisClass.openPnlGrid('pnlGrid{$variable_el}');
+                        thisClass.submitForm = false;
+                    }
+                }
+            });
+
+            $('#btnDelete{$variable_el}').click(function(){
+                var ids = jQuery(aInfo.grd).getGridParam('selarrrow');
+                if(ids.length == 0){
+                    showMessage('{$smarty.const.MSG_NOT_SELECT}', true);
+                    return;
+                }
+                thisClass.confirmDlg(msg_delconfirm, msg_delcaption, ids);
+            });
+
+
+            $('#btnAdd{$variable_el}').click(function(){
+                if(thisClass.isDetail==false){
+                    thisClass.popContainAddEdit('add');
+                    $('#masterDetail').hide();
+                }else{
+                    window.location.href = aInfo.classname.toLowerCase() + '?editID=';
+                }
+            });
+
+            $("#period_preset").change(function(){
+                thisClass.gridReload();
+            });
+            
+            $('#period_start, #period_end').datepicker({
+                changeMonth: true,
+                changeYear: true,
+                dateFormat: 'd MM yy',
+                monthNamesShort: aInfo.month,
+                onSelect: function(dateText, inst) {
+                    $('.navbar-search[name="{$variable_el}"]').val('');
+                    thisClass.gridReload();
+                    var strFrom = $('#period_start').val();
+                    var arr = strFrom.split(' ');
+                    $(this).val(arr[0] + ' ' + aInfo.month[$(this).datepicker('getDate').getMonth()] + ' ' + arr[2]);
+                }
+            });
+
+            $('#txt_bill_date').datepicker({
+	            changeMonth: true,
+	            changeYear: true,
+	            dateFormat: 'd MM yy',
+	            monthNamesShort: aInfo.month,
+	            onSelect: function(dateText, inst) {
+	                var strFrom = $(this).val();
+	                var arr = strFrom.split(' ');
+	                $(this).val(arr[0] + ' ' + aInfo.month[$(this).datepicker('getDate').getMonth()] + ' ' + arr[2]);
+	            }
+	        });
+                
+            $("#search_keyword").change(function(){
+                thisClass.searchAddProduct();
+            });
+
+            $(".searchKeyword").click(function(){
+                thisClass.searchAddProduct();
+            });
+
+            $('.navbar-search[name="{$variable_el}"]').submit(function(){ 
+                thisClass.gridReload();
+                $('.search-query[name="{$variable_el}"]').val('');
+                return false;
+            });
+
+            this.setButtonUI('.btndiv');
+            thisClass.jqGrid();
+            
+            thisClass.initValidateForm(formId, rule);
+            
+            if(!aInfo.isDetail){
+               thisClass.getSupplyFilter();
+               thisClass.checkCallOutside();
+            }
+
+            $(window).resize(this.fitTable);
+            this.fitTable();
+        }
+
+        thisClass.initEvent();
+
+    }
+
+    var grd{$variable_el}
+    jQuery(document).ready(function(){
+        grd{$variable_el} = new MGMT{$variable_el}({$aInfo});
+    });
+</script>

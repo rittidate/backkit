@@ -1,0 +1,25 @@
+<style>
+    .hasGradient #secondLevelContent{
+        padding:0px;
+    }
+    #oaNavigation{
+        border:none;
+    }
+    .pnlContainer{
+        width:100%;
+    }
+</style>
+
+<div id="divGrid{$variable_el}">
+    <div id="divAction{$variable_el}" style="height: 25px;position: relative;margin-top: 25px;">
+    {*}<div id="btnDelete{$variable_el}" class="btndiv" style="margin-left: 5px;width:65px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;"><span class="ui-icon ui-icon-circle-minus" style="float:left;"></span>&nbsp;{$smarty.const.MSG_DELETE}</div>{*}
+    {if !$addButton}
+    <div id="btnAdd{$variable_el}" class="btndiv" style="width:95px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;"><span class="ui-icon ui-icon-circle-plus" style="float:left;"></span>&nbsp;{$smarty.const.MSG_ADD}</div>
+    {/if}
+    </div>
+    
+    <!-- the grid definition in html is a table tag with class 'scroll' -->  
+    <table id="grd{$variable_el}" ></table>
+    <!-- pager definition. class scroll tels that we want to use the same theme as grid -->
+    <div id="p{$variable_el}" ></div>
+</div>

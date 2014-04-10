@@ -1,0 +1,116 @@
+<input type="hidden" name="hdddirection" id="hdddirection" value="{$orderdirection}" />
+<div class="tableHeader">
+<ul class="tableActions">
+<li>
+<strong>{$smarty.const.STR_CAPTION_USER_GROUP}</strong>
+</li>
+</ul>
+<div class="clear"></div>
+<div class="corner left"></div>
+<div class="corner right"></div>
+</div>
+<table cellspacing="0" summary="" border="0">
+<thead>
+<tr>
+<th class="{$classSort}" style="width:150px"><a id="sortColumn" class="sortColumn" href="javascript:sortColumn('username','{$orderdirection}');">User Name</a></th>
+{foreach item=i from=$Group name=foo}
+<th style="width:120px;text-align:center">{$i.roles_name} </th>
+{if $smarty.foreach.foo.last}
+<th  style="width:120px;">{$smarty.const.STR_SAVE_CHANGE}</th>
+{/if}
+{/foreach}
+</tr>
+</thead>
+<tbody>
+{foreach item=i from=$Users name=user}
+<tr><td class="toggleSelection"><i class="icon-user"></i>{$i.username}</td>{foreach item=j from=$Group name=foo}<td align="center" style="padding:4px 8px 4px;">{foreach item=k from=$user_group name=foo3}{if $i.user_id==$k.user_id && $j.roles_id==$k.roles_id}<input checked type="checkbox" {if $j.admin_group}disabled=disabled{/if} class="userid_{$i.user_id}" name="userid_{$i.user_id}[]" value="{$j.roles_id}"/>{break}{else}{if $smarty.foreach.foo3.last}<input type="checkbox" {if $j.admin_group}disabled=disabled{/if} class="userid_{$i.user_id}" name="userid_{$i.user_id}[]" value="{$j.roles_id}"/>{/if}{/if}{foreachelse}<input type="checkbox" {if $j.admin_group}disabled=disabled{/if} class="userid_{$i.user_id}" name="userid_{$i.user_id}[]" value="{$j.roles_id}"/>{/foreach}</td>{if $smarty.foreach.foo.last}<td style="padding:4px 8px 4px;"><input  type="button" id="submit{$i.user_id}" class="save-access-group" value="{$smarty.const.STR_SAVE}" name="userid_{$i.user_id}" style='float:left' /> <div id='indicator_userid_{$i.user_id}' class='ajax-loading panel-loading hide' style='display: none;margin-left:55px;padding:0px 0px 3px;left:0;position:relative;top:0px;'>&nbsp; </div></td> {/if}{/foreach} </tr>{/foreach}
+</tbody>
+</table>
+{literal}
+<script  type="text/javascript">
+function sortColumn(column_name, direction)
+{
+var url = "ajax/save-access-group.php";
+
+$.post(url, {column_name: column_name, direction: direction, oper: 'search'}, function(response) {
+$(".tableWrapper").html(response);
+});
+}
+function popPermission(user_id, user_name){
+
+$('#dialog').dialog('option', 'title', msg_titleuseraccessdata + ' "' +user_name + '"' );
+
+if(language=='th'){
+$('#dialog').dialog('option', 'buttons',
+{'ปิด': function() { $('#dialog').dialog("close"); }
+});
+}else{
+$('#dialog').dialog('option', 'buttons',
+{close: function() { $('#dialog').dialog("close"); }
+
+});
+}
+var url = "ajax/save-access-data.php";
+$("#indicator_permission_"+user_id).show();
+$.post(url, {user_id: user_id, oper: 'available'}, function(data) {
+if(isExpire(data)) return;
+$("#content").html(data);
+$('#dialog').dialog('open');
+$('#dialog').dialog('option', 'width', 750);
+$('#dialog').dialog('option', 'height', 'auto');
+$('#dialog').dialog( "option", "position", 'top' );
+$('#dialog').dialog( "option", "opacity", 0.5 );
+$("#indicator_permission_"+user_id).hide();
+v_user_id = user_id;
+v_user_name = user_name;
+});
+}
+
+jQuery(document).ready(function(){
+$(".save-access-group").click(function () {
+var name = $(this).attr("name");
+$("#indicator_"+name).show();
+$(this).attr("disabled",true);
+clearMessage();
+var url = "ajax/save-access-group.php";
+var groupids = [];
+var user_id = name.replace(/userid_/i, "");
+$.each($('.'+name+':checked'), function() {
+groupids.push($(this).val());
+});
+/*if(groupids.length == 0) {
+var msg = "<!--error-user-start-->Please Select <b>Group</b><!--error-user-end-->";
+showError(msg);
+$("#indicator_"+name).hide();
+return;
+}*/
+var hdddirection = $("#hdddirection").val();
+$.post(url, {'groupids[]': groupids, user_id: user_id, oper: 'save', direction:hdddirection}, function(response) {
+$(".tableWrapper").html(response);
+$("#indicator_"+name).hide();
+$(this).attr("disabled", false);
+showComplete("You <b>Save User Access Group</b> has been Updated");
+});
+});
+
+$(":button , :submit").addClass(
+'ui-state-default ' + 'ui-corner-all')
+.hover(
+function() {
+$(this).addClass('ui-state-hover');
+$(this).css("cursor", "pointer");
+},
+function() {
+$(this).removeClass('ui-state-hover');
+$(this).css("cursor", "default");
+}
+)
+.focus(function() {
+$(this).addClass('ui-state-focus');
+})
+.blur(function() {
+$(this).removeClass('ui-state-focus');
+});
+});
+</script>
+{/literal}

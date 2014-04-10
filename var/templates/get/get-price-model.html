@@ -1,0 +1,96 @@
+<div id="pnlPriceModel" style='width:100%'>
+<div id="pnlCPM" style="">
+        <input class="price_model_type parent" type="checkbox" name="chkCPM"  id="chkCPM" style="float: left;" {if $is_price_model_type_cpm}checked{/if} />
+        <label for="chkCPM_" style=" padding-top: 3px;font-weight: bold">CPM</label>
+        <div style="padding:10px;line-height: 12px;margin-top: 2px;width: 330px;{if !$is_price_model_type_cpm}display:none;{/if}" class="boder_solid">
+            {foreach $cpm as $model} 
+            <input {if $model.selected==1 && $model.price_model_type==$smarty.const.PRICE_MODEL_CPM}checked{/if} class="chk_adtype child" type="checkbox" name="{$smarty.const.PRICE_MODEL_CPM}_{$model.data_type_id}"  id="{$smarty.const.PRICE_MODEL_CPM}_{$model.data_type_id}" value="{$model.data_type_id}" style="float: left;" />
+              <label for="{$smarty.const.PRICE_MODEL_CPM}_{$model.data_type_id}_" style=" padding-top: 3px;">{$model.data_type_name}</label><br/>
+
+              <div class="price_model_value" style="width: 100%;padding-left: 70px;{if $model.selected==0 || $model.price_model_type!=$smarty.const.PRICE_MODEL_CPM}display:none;{/if}">
+                  {if $data_layer==$smarty.const.DATA_LAYER_WEB}
+                  <div style="height: 22px;"><div style="width:80px;float: left;margin-top: 5px;">{$smarty.const.MSG_PUBLISHER_RATE}</div><input  type="text"  id="{$smarty.const.PRICE_MODEL_CPM}_{$model.data_type_id}_publisher_rate" name="{$smarty.const.PRICE_MODEL_CPM}_{$model.data_type_id}_publisher_rate" style="width: 100px;" value="{$model.publisher_rate}" /></div>
+                    <div style="height: 22px;"><div style="width:80px;float: left;margin-top: 5px;">{$smarty.const.MSG_AGENCY_RATE}</div><input  type="text"  id="{$smarty.const.PRICE_MODEL_CPM}_{$model.data_type_id}_agency_rate" name="{$smarty.const.PRICE_MODEL_CPM}_{$model.data_type_id}_agency_rate" style="width: 100px;" value="{$model.agency_rate}" /></div>
+                  {/if}
+                  {if $data_layer==$smarty.const.DATA_LAYER_SYNE}
+                    <div style="height: 22px;"><div style="width:80px;float: left;margin-top: 5px;">{$smarty.const.MSG_NET_TO_WEB}</div><input  type="text"  id="{$smarty.const.PRICE_MODEL_CPM}_{$model.data_type_id}_net_to_web" name="{$smarty.const.PRICE_MODEL_CPM}_{$model.data_type_id}_net_to_web" style="width: 100px;" value="{$model.net_to_web}" /></div>
+                  {/if}
+              </div>          
+            {foreachelse}
+            {/foreach}
+        </div>
+     </div>
+    <br/>
+    <div id="pnlTimePeriod" style="">        
+        <input class="price_model_type parent" type="checkbox" name="chkTimePeriod"  id="chkTimePeriod" style="float: left;" {if $is_price_model_type_time_period}checked{/if} />
+        <label for="chkTimePeriod_" style=" padding-top: 3px;font-weight: bold">Time Period</label>
+        <div style="padding:10px;line-height: 12px;margin-top: 2px;width: 330px;{if !$is_price_model_type_time_period}display:none;{/if}" class="boder_solid">
+        <div style="margin-top:5px;margin-bottom:10px;margin-left:15px;">
+            <span>Period:</span>
+            <select id="lst_price_model_period" name="lst_price_model_period"  style="width: 100px;margin-right:10px;" >
+                        {html_options options=$priceModelPeriodOptions selected="{$price_model_period}"}
+            </select>
+
+            <span>Slot Rotate:</span>
+            <input type="text"  id="price_model_rotate" name="price_model_rotate" style="width: 50px;" value="{$price_model_rotate}" />
+        </div>
+            {foreach $time_period as $model} 
+            <input {if $model.selected==1 && $model.price_model_type==$smarty.const.PRICE_MODEL_TIME_PERIOD}checked{/if} class="chk_adtype child" type="checkbox" name="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}"  id="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}" value="{$model.data_type_id}" style="float: left;" />
+              <label for="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}_" style=" padding-top: 3px;">{$model.data_type_name}</label><br/>
+            <div class="price_model_value" style="margin-bottom: 10px;width: 100%;padding-left: 70px;{if $model.selected==0 || $model.price_model_type!=$smarty.const.PRICE_MODEL_TIME_PERIOD}display:none;{/if}">
+                  {if $data_layer==$smarty.const.DATA_LAYER_WEB}
+                    <div style="height: 22px;"><div style="width:80px;float: left;margin-top: 5px;">{$smarty.const.MSG_PUBLISHER_RATE}</div><input  type="text"  id="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}_publisher_rate" name="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}_publisher_rate" style="width: 100px;" value="{$model.publisher_rate}" /></div>
+                    <div style="height: 22px;"><div style="width:80px;float: left;margin-top: 5px;">{$smarty.const.MSG_AGENCY_RATE}</div><input  type="text"  id="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}_agency_rate" name="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}_agency_rate" style="width: 100px;" value="{$model.agency_rate}" /></div>
+                  {/if}
+                  {if $data_layer==$smarty.const.DATA_LAYER_SYNE}
+                    <div style="height: 22px;"><div style="width:80px;float: left;margin-top: 5px;">{$smarty.const.MSG_NET_TO_WEB}</div><input  type="text"  id="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}_net_to_web" name="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}_net_to_web" style="width: 100px;" value="{$model.net_to_web}" /></div>
+                  {/if}
+                  <div style="height: 22px;"><div style="width:80px;float: left;margin-top: 5px;">{$smarty.const.MSG_IMPRESSIONS}</div><input  type="text"  id="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}_time_period_impressions" name="{$smarty.const.PRICE_MODEL_TIME_PERIOD}_{$model.data_type_id}_time_period_impressions" style="width: 100px;" value="{$model.time_period_impressions}" /></div>
+              </div>          
+            {foreachelse}
+            {/foreach}
+        </div>
+    </div>
+</div>
+<br/>
+
+
+<script  type="text/javascript">
+    
+jQuery(document).ready(function(){
+    $('.chk_adtype').change(function(){
+        if($(this).is(':checked')){
+            $(this).next().next().next().toggle(true);
+            $(this).parent().parent().find('input:checkbox:first').attr('checked', 'checked')
+        }else{
+             $(this).next().next().next().toggle(false);
+        }
+    })
+
+    $('#pnlPriceModel input:checkbox').change(function(){
+        // Parent Checkbox Change //
+        if ($(this).hasClass('parent')){
+            if (!$(this).is(':checked')){
+                $(this).parent().find('.boder_solid').find('input:checkbox').removeAttr('checked');
+                $(this).parent().find('.boder_solid').toggle(false);
+                $(this).parent().find('.price_model_value').toggle(false);
+                
+            }else{
+                $(this).parent().find('.boder_solid').toggle(true);
+            }
+        }
+        // Child Checkbox Change //
+        else if ($(this).hasClass('child')){
+            if ($(this).is(':checked')){
+                $(this).parent().parent().find('input:checkbox:first').attr('checked', 'checked');
+            }else{
+                if ($(this).parent().find('input.child:checked').length == 0){
+                    $(this).parent().parent().find('input:checkbox:first').removeAttr('checked');
+                    $(this).parent().parent().find('.boder_solid').toggle(false);
+                }
+            }   
+        }
+    });
+
+}); 
+</script>

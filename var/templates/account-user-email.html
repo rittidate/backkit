@@ -1,0 +1,51 @@
+<div id="messageDialog"></div>
+<form action="{$action}"  method="post" enctype="multipart/form-data" name="settingsform" id="settingsform">
+    <h3>{$smarty.const.STR_CHANGEEMAIL}</h3>
+    <table class="table table-striped" cellspacing="0" cellpadding="0" border="0">
+        <tbody>
+            <tr>
+                <td>&nbsp;<input type="hidden" value="true" name="submitok"></td>
+                <td valign="top" id="cell_username">{$smarty.const.STR_USERNAME}</td>
+                <td valign="top">
+                    &nbsp;{$username}
+                </td>
+                <td>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td valign="top" id="cell_contact_name">{$smarty.const.STR_FULLNAME}</td>
+                <td valign="top">&nbsp;{$contact_name}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td valign="top" class="cellenabled" id="cell_pw">{$smarty.const.STR_PASSWORD}</td>
+                <td valign="top">
+                    <input type="password" value="" id="pw" name="pw" placeholder="Password" class="input-large" >
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td valign="top" class="cellenabled" id="cell_email_address">{$smarty.const.STR_EMAILADDRESS}</td>
+                <td valign="top">
+                    <input type="text" value="{$email_address}" required id="email_address" name="email_address" class="input-large" >
+                    <span class="field-hint"></span>
+                </td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+    <input type="submit" tabindex="3" value="{$smarty.const.STR_SAVE_CHANGE}" required name="submitsettings">
+</form>
+
+<script type="text/javascript">
+
+
+{if $aErrormessage}
+        wanrMessage('{$aErrormessage}');
+{else}
+    //clearMessage();
+{/if}
+</script>

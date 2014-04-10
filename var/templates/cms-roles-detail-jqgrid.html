@@ -1,0 +1,218 @@
+
+<div id="divGrid{$variable_el}">
+    <!-- the grid definition in html is a table tag with class 'scroll' -->  
+    <table id="grd{$variable_el}" ></table>
+    <!-- pager definition. class scroll tels that we want to use the same theme as grid -->
+    <div id="p{$variable_el}" ></div>
+</div>
+
+
+<script  type="text/javascript">
+    
+    //MGMT{$variable_el}.prototype = Object.create( GridBase.prototype);
+    
+    MGMT{$variable_el}.prototype = new GridBase(); // inherit class GridBase();
+    function MGMT{$variable_el}(aInfo){
+        //GridBase.call(this, aInfo ); // call constructor super class
+        this.constructor(aInfo);
+        var thisClass = this;        
+        var roles_id;
+        this.hideMid = [];
+        this.hideLarge = [];
+        
+        this.dataSearch = function()
+        {
+            var oData = { q:aInfo.classname,
+                oper:"search",
+                roles_id:thisClass.roles_id,
+            };                
+            jQuery.extend(oData, this.optSearch);
+            //$(aInfo.grd).setPostData(oData);
+            $(aInfo.grd).jqGrid('setGridParam',{ postData: null }); 
+            $(aInfo.grd).jqGrid('setGridParam',{ postData:oData })
+            //clear param
+            $(aInfo.grd).jqGrid().setGridParam({ url : 'processajax.php?q=' + aInfo.classname +'&nd='+new Date().getTime()+'&fileclass='+ aInfo.fileclass })
+        }
+        
+        this.loadData = function(roles_id){
+            thisClass.roles_id = roles_id;
+            thisClass.gridReload();
+        }
+        
+        this.roleChange = function(column_name, column_value){
+            var url = $(aInfo.grd).getGridParam('url');
+            $.ajax({
+                type: "POST",
+                url:url,
+                dataType: "json",
+                data: {  oper:'editAllItems', roles_id:thisClass.roles_id,
+                    column_name:column_name, column_value:column_value }
+                }).done(function( response ){
+                    if(response.error!=''){
+                        messageDlg(response.error);
+                    }
+                    thisClass.gridReload();
+                    //$('#load_grdCms_Roles_Detail').hide();
+                }).error(function(res){
+                    if(isExpire(res.responseText)) return;
+                });
+        }
+
+        this.jqGrid = function(){
+            thisClass.grid = jQuery(aInfo.grd).jqGrid({
+                url: this.setGrdParam(),
+                datatype: aInfo.datatype,
+                mtype: "POST",
+                colNames: aInfo.colN,
+                colModel: [
+                    { name:'module_name',index:'module_name', width:350, sortable:false}, 
+                    { name:'role_access',index:'role_access', width:100, sortable:false, align:"center", editable: true,edittype:"select",
+                            editoptions:{ value:"Y:Yes;N:No",dataInit:function(elem) { $(elem).width(90);  } }}, 
+                    { name:'role_view',index:'role_view', width:100, sortable:false, align:"center", editable: true,edittype:"select",
+                        editoptions:{ value:"All:All;Group:Group;Owner:Owner;None:None" ,
+                            dataEvents: [{
+                                                        type: 'click', fn: function(e) {
+                                                            var row = jQuery(e.target).closest('tr.jqgrow');
+                                                            var rowId = row.attr('id');
+                                                            if(rowId==47){
+                                                                $(this).each(function() {
+                                                                    $.each(this.options, function(i, v){
+                                                                        if($(v).val()=='Group' || $(v).val()=='Owner' || $(v).val()=='None')
+                                                                            $(v).attr("disabled", true);
+                                                                    });
+                                                                });
+                                                            }
+                                                        }
+                                                }],
+                            dataInit:function(elem) { $(elem).width(90);  }}}, 
+                    { name:'role_edit',index:'role_edit', width:100, sortable:false, align:"center", editable: true,edittype:"select",
+                        editoptions:{ value:"All:All;Group:Group;Owner:Owner;None:None",
+                                                    dataEvents: [{
+                                                        type: 'click', fn: function(e) {
+                                                            var row = jQuery(e.target).closest('tr.jqgrow');
+                                                            var rowId = row.attr('id');
+                                                            if(rowId==47){
+                                                                $(this).each(function() {
+                                                                    $.each(this.options, function(i, v){
+                                                                        if($(v).val()=='Group' || $(v).val()=='Owner')
+                                                                            $(v).attr("disabled", true);
+                                                                    });
+                                                                });
+                                                            }
+                                                        }
+                                                    }] ,
+                                                    dataInit:function(elem) { $(elem).width(90);  }}}, 
+                    { name:'role_delete',index:'role_delete', width:100, sortable:false, hidden:true, align:"center", editable: true,edittype:"select",
+                        editoptions:{ value:"All:All;Group:Group;Owner:Owner;None:None" ,dataInit:function(elem) { $(elem).width(90);  }}}, 
+                    { name:'role_export',index:'role_export', width:100, sortable:false, align:"center", editable: true,edittype:"select",
+                        editoptions:{ value:"All:All;Group:Group;Owner:Owner;None:None" ,
+                                                dataEvents: [{
+                                                        type: 'click', fn: function(e) {
+                                                            var row = jQuery(e.target).closest('tr.jqgrow');
+                                                            var rowId = row.attr('id');
+                                                            if(rowId==47){
+                                                                $(this).each(function() {
+                                                                    $.each(this.options, function(i, v){
+                                                                        if($(v).val()=='Group' || $(v).val()=='Owner')
+                                                                            $(v).attr("disabled", true);
+                                                                    });
+                                                                });
+                                                            }
+                                                        }
+                                                }],                            
+                            dataInit:function(elem) { $(elem).width(90);  }}}, 
+                ],
+                rowNum:-1,
+                //imgpath: gridimgpath,
+                pager: jQuery(aInfo.pgrd),
+                sortname: aInfo.initSortName,
+                viewrecords: true,
+                sortorder: "desc",
+                caption: aInfo.g_caption,
+                editurl: this.setGrdParam(),
+                width:$('.pnlContainer').width()-40,
+                height:442, //250
+                rownumbers: true,
+                multiboxonly: true,
+                hoverrows:false,
+                forceFit : true, 
+                cellEdit: true, 
+                cellsubmit: 'clientArray',
+                loadBeforeSend: function(xhr){
+                    thisClass.setInputSize();
+                },
+                loadError : function(res,st,err) {
+                    if(isExpire(res.responseText)) return;
+                    thisClass.initialControl();
+                },
+                loadComplete : function(res) {
+                    //if(showError(res.rows)) return;
+                    
+                    $(aInfo.grd).setGridHeight('auto');
+                    
+                    thisClass.initialControl();    
+                    return;
+                },afterSaveCell:function(rowid, cellname, value, iRow, iCol){
+                        var url = $(aInfo.grd).getGridParam('url');
+                        $.ajax({
+                            type: "POST",
+                            url:url,
+                            dataType: "json",
+                            data: {  oper:'editItems', roles_id:thisClass.roles_id,
+                                menu_id:rowid, column_name:cellname, column_value:value }
+                            }).done(function( response ){
+                                if(response.error!=''){
+                                    messageDlg(response.error);
+                                }
+                                thisClass.gridReload();
+                                //$('#load_grdCms_Roles_Detail').hide();
+                            }).error(function(res){
+                                if(isExpire(res.responseText)) return;
+                            });
+                },
+                afterInsertRow: function(rowid, rowdata){        
+                    if(rowid==0){
+                        $('#access_cascade').change(function(){                            
+                            thisClass.roleChange('role_access', $(this).val());
+                        });
+                        $('#edit_cascade').change(function(){                            
+                            thisClass.roleChange('role_edit', $(this).val());
+                        });
+                        $('#view_cascade').change(function(){                            
+                            thisClass.roleChange('role_view', $(this).val());
+                        });
+                        $('#delete_cascade').change(function(){                            
+                            thisClass.roleChange('role_delete', $(this).val());
+                        });
+                        $('#export_cascade').change(function(){                            
+                            thisClass.roleChange('role_export', $(this).val());
+                        });
+                    }
+
+                }
+            }).navGrid(aInfo.pgrd,{ refresh:true,search:false,del:false,edit:false, add:false, edittext:msg_edit, addtext:msg_add, deltext:msg_delete },
+            { editCaption: msg_editcaption,bSubmit: msg_submit, bCancel: msg_cancel, width: 370, height: 270, closeAfterEdit:false, reloadAfterSubmit:false },
+            { addCaption: msg_addcaption,bSubmit: msg_submit, bCancel: msg_cancel, width: 370, height: 270, closeAfterAdd:false,reloadAfterSubmit:false })
+            //$('#divGrid{$variable_el}').css('width',$('#gbox_'+aInfo.grd.replace(/#/g,"")).css('width'));
+        }
+        
+
+    this.initEvent = function(){           
+        thisClass.jqGrid();
+        
+        if(!thisClass.isDetail)
+            thisClass.gridReload();
+        
+        $(window).resize(this.fitTable);
+        this.fitTable();
+    }
+    this.initEvent();
+ }
+ 
+var grd{$variable_el}
+jQuery(document).ready(function(){
+    grd{$variable_el} = new MGMT{$variable_el}({$aInfo});    
+});
+
+</script>
+

@@ -1,0 +1,221 @@
+<link rel="stylesheet" type="text/css" media="screen" href="./Includes/assets/jqgrid/css/ui.jqgrid.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/jquery.multiselect.filter.css" />
+<link rel="stylesheet" type="text/css" href="./Includes/assets/ui-checkbox/css/prettify.css" />
+
+<script src="./Includes/assets/js/jquery-1.6.1.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqui/js/jquery-ui-1.8.7.custom.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/i18n/grid.locale-en.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqgrid/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/prettify.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/ui-checkbox/js/jquery.multiselect.filter.min.js" type="text/javascript"></script>
+<script src="./Includes/assets/jqvalidate/jquery.validate.js" type="text/javascript"></script>
+<script src="./Includes/assets/js/jquery.blockUI.js" type="text/javascript"></script>
+ {$js_preriod}
+
+
+<div id="messageDialog"></div>
+
+<form id="frm{$variable_el}">
+    <fieldset>
+        <div class="pnlContainer">
+                <div id="pnlGrid{$variable_el}" class="show" >
+                    <div class="row-fluid">
+                        <div class="span2">
+                            <select id="period_preset" class="span12" >
+                                            {html_options options=$periodPresetOptions selected=$dateSelected}
+                            </select>
+                        </div>
+                        <div class="span2">
+                            <input class="span12" class="preriod_date" type="text" id="period_start" value="{$dStart}" name="period_start" placeholder="Period Start" />
+                        </div>
+                        <div class="span2">
+                             <input class="span12" class="preriod_date" type="text" id="period_end" value="{$dEnd}" name="period_end" placeholder="Period End" />
+                        </div>
+                    </div>
+           
+                         <!-- Includes Publisher Grid -->
+                         {$order_grid}
+                </div>
+                    <div id="pnlAddEdit">
+                        <div id="content" style="margin-left:15px">
+                            <div class="pnlAddEditOnly">
+                                <h4 class="orderNumber">Ship Detail</h4>
+                                    <div class="row-fluid">
+                                        <div class="span2">
+                                            <input type="hidden" id="txt_id" name="txt_id"/>
+                                            <input type="text" id="txt_firstname" name="txt_firstname" class="span12"  placeholder="{$smarty.const.MSG_FNAME}"/>
+                                        </div>
+                                        <div class="span1">
+                                            <input type="text" id="txt_middlename" name="txt_middlename" class="span12"  placeholder="Middlename"/>
+                                        </div>
+                                        <div class="span3">
+                                            <input type="text" id="txt_lastname" name="txt_lastname" class="span12" placeholder="{$smarty.const.MSG_LNAME}"/>
+                                        </div>
+
+                                    </div>
+                                    <div class="row-fluid">
+                                        <div class="span3">
+                                            <input type="text" id="txt_address1" name="txt_address1" class="span12" placeholder="{$smarty.const.MSG_ADDRESS1}"/>
+                                        </div>
+                                        <div class="span3">
+                                            <input type="text" id="txt_address2" name="txt_address2" class="span12" placeholder="{$smarty.const.MSG_ADDRESS2}"/>
+                                        </div>
+                                        <div class="span3">
+                                            <input type="text" id="txt_address3" name="txt_address3" class="span12" placeholder="{$smarty.const.MSG_ADDRESS3}"/>
+                                        </div>
+                                        <div class="span3">
+                                            <input type="text" id="txt_address4" name="txt_address4" class="span12" placeholder="{$smarty.const.MSG_ADDRESS4}"/>
+                                        </div>
+
+                                    </div>
+                                    <div class="row-fluid">
+                                        <div class="span2">
+                                            <input type="text" id="txt_city" name="txt_city" class="span12" placeholder="{$smarty.const.MSG_CITY}"/>
+                                        </div>
+                                        <div class="span2">
+                                            <input type="text" id="txt_state" name="txt_state" class="span12" placeholder="{$smarty.const.MSG_STATE}"/>
+                                        </div>
+                                        <div class="span1">
+                                            <input type="text" id="txt_zipcode" name="txt_zipcode" class="span12" placeholder="{$smarty.const.MSG_ZIPCODE}"/>
+                                        </div>
+                                        <div class="span3">
+                                            <select class="span3" id="select_country" name="select_country"></select>
+                                        </div>
+                                    </div>
+                                    <div class="row-fluid">
+                                        <div class="span3">
+                                            <input type="text" id="txt_email" name="txt_email" class="span12" placeholder="{$smarty.const.STR_EMAILADDRESS}"/>
+                                        </div>
+                                        <div class="span2">
+                                            <input type="text" id="txt_telephone" name="txt_telephone" class="span12" placeholder="{$smarty.const.MSG_TELEPHONE}"/>
+                                        </div>
+                                        <div class="span1">
+                                            <input type="text" id="txt_telephone_ext" name="txt_telephone_ext" class="span12" placeholder="{$smarty.const.MSG_EXT}"/>
+                                        </div>
+                                        <div class="span2">
+                                            <input type="text" id="txt_mobile" name="txt_mobile" class="span12" placeholder="{$smarty.const.MSG_MOBILE}"/>
+                                        </div>
+                                        <div class="span2">
+                                            <input type="text" id="txt_fax" name="txt_fax" class="span12" placeholder="{$smarty.const.MSG_FAX}"/>
+                                        </div>
+                                        <div class="span1">
+                                            <input type="text" id="txt_fax_ext" name="txt_fax_ext" class="span12" placeholder="{$smarty.const.MSG_EXT}"/>
+                                        </div>
+                                    </div>
+                                    <div class="row-fluid">
+                                         <div class="span1">{$smarty.const.MSG_SHIPMENT}</div>
+                                        <div class="span2"><select class="span12" id="select_shipment_id" name="select_shipment_id"></select></div>
+                                    </div>
+                                    <div class="row-fluid">
+                                        <div class="span1">{$smarty.const.MSG_PAYMENT}</div>
+                                        <div class="span2"><select class="span12" id="select_payment_id" name="select_payment_id"></select></div>
+                                    </div>
+                                    <div class="row-fluid">
+                                        <div class="span1">{$smarty.const.MSG_STATUS}</div>
+                                        <div class="span2"><select class="span12" id="select_order_status" name="select_order_status"></select></div>
+                                    </div>
+                                    <div class="row-fluid">
+                                        <div class="span1">{$smarty.const.MSG_POST_CODE}</div>
+                                        <div class="span2"><input type="text" id="txt_postcode" name="txt_postcode" class="span12" placeholder="{$smarty.const.MSG_POST_CODE}"/></div>
+                                    </div>
+                                    <div class="row-fluid">
+                                       <div class="span1">{$smarty.const.MSG_ACTIVE}</div>
+                                        <div class="span1">
+                                            <input type="checkbox" id="chk_is_active" name="txt_is_active" value="Y" />
+                                        </div>
+                                    </div>
+                                    
+                                        <table id="grid-orderdetail" class="table table-bordered">
+                                            <thead>
+                                                    <tr>
+                                                        <th>{$smarty.const.MSG_BARCODE}</th>
+                                                        <th>{$smarty.const.MSG_PRODUCT}</th>
+                                                        <th>{$smarty.const.MSG_PRICE}</th>
+                                                        <th style="width:20px;">{$smarty.const.MSG_QTY}</th>
+                                                        <th>{$smarty.const.MSG_TOTAL}</th>
+                                                        <th></th>
+                                                    </tr>
+                                            </thead>
+                                            <tbody class="orderdail_tr">
+                                                    <tr class="footer_grid">
+                                                        <td colspan="3"><a href="#myModal" role="button" class="btn" style="float:left;" data-toggle="modal">Add Product</a>subtotal</td>
+                                                        <td colspan="3"><input type="text" id="txt_subtotal" name="txt_subtotal" class="input-medium" /></td>
+                                                    </tr>
+                                                    <tr class="footer_grid">
+                                                        <td colspan="3">Ship Price</td>
+                                                        <td colspan="3"><input type="text" id="txt_shipprice" name="txt_shipprice" class="input-medium" /></td>
+                                                    </tr>
+                                                    <tr class="footer_grid">
+                                                        <td colspan="3">Grand Total</td>
+                                                        <td colspan="3"><input type="text" id="txt_grandtotal" name="txt_grandtotal" class="input-medium" /></td>
+                                                    </tr>
+                                            </tbody>
+                                        </table>
+                                <table cellpadding="3" style="margin:0px;font-size:9pt" border="0">
+                                        <tr>
+                                            <td style="width:120px;text-align: left;vertical-align: bottom;"><div id="btnClose{$variable_el}" class="btndiv backto" ><span class="ui-icon ui-icon-circle-arrow-w" style="float:left;"></span>&nbsp;{$smarty.const.MSG_BACKTO}</div></td>
+                                            <td style="float:right;vertical-align: bottom;" ><br/><br/>
+                                                <div id="btnExcel{$variable_el}" class="btndiv" style="width:90px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;margin-right: 10px;"><span class="ui-icon ui-icon-document" style="float:left;"></span>&nbsp;{$smarty.const.STR_EXCEL}</div>
+                                                <div id="btnPdf{$variable_el}" class="btndiv" style="width:90px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;margin-right: 10px;"><span class="ui-icon ui-icon-document" style="float:left;"></span>&nbsp;{$smarty.const.STR_PDF}</div>
+                                                <div id="btnSave{$variable_el}" class="btndiv" style="width:55px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE}</div>
+                                                <div id="btnSaveBack{$variable_el}" class="btndiv" style="width:120px;height:18px;text-align:left;padding-top:3px;padding-left:2px;margin-bottom:0px;float: right;margin-right: 10px;"><span class="ui-icon ui-icon-disk" style="float:left;"></span>&nbsp;{$smarty.const.STR_SAVE_BACK}</div>
+                                            </td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+
+                                    </table>
+                                    <br/>
+                                    <div id="masterDetail" >
+                                        <div class="masterDetailCaption"> {$smarty.const.STR_DATA_RELATIONSHIP}</div>
+                                        <div id="customerGrid">
+                                            {$customer_grid}
+                                        </div>
+                                        <div id="orderstatusemailGrid">
+                                            {$order_status_email_grid}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+        </div>
+        </fieldset>
+</form>
+
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal-header">
+<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+<h3 id="myModalLabel">Add Product</h3>
+</div>
+<div class="modal-body">
+  <table id="add-orderdetail" class="table table-bordered">
+    <thead>
+            <tr>
+                <th colspan="2"><input type="text" id="search_barcode" name="search_barcode" class="span2" placeholder="{$smarty.const.MSG_BARCODE}"/></th>
+                <th colspan="3"><input type="text" id="search_name" name="search_name" placeholder="{$smarty.const.MSG_PRODUCT}"/></th>
+            </tr>
+            <tr>
+                <th>{$smarty.const.MSG_BARCODE}</th>
+                <th>{$smarty.const.MSG_PRODUCT}</th>
+                <th>{$smarty.const.MSG_PRICE}</th>
+                <th style="width:20px;">{$smarty.const.MSG_QTY}</th>
+                <th>Add</th>
+            </tr>
+    </thead>
+    <tbody class="orderdetail_search">
+        <tr class='detail_add_grid'>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </tbody>
+</table>
+</div>
+<div class="modal-footer">
+<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+<button class="btn btn-primary">Save changes</button>
+</div>
+</div>

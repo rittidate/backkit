@@ -1,0 +1,249 @@
+{include file="grid-wrapper.inc.html"}
+<script  type="text/javascript">
+MGMT{$variable_el}.prototype = new GridBase();
+
+function MGMT{$variable_el}(aInfo){
+
+    this.constructor(aInfo);
+    this.grid;
+    var thisClass = this;
+
+    this.dataSearch = function()
+    {
+        var keyword = $(".search-query").val();
+        var period_start = $("#period_start").val();
+        var period_end = $("#period_end").val();
+        var oData = { q:aInfo.classname,
+            oper:"search",
+            period_start: period_start,
+            period_end: period_end,
+            keyword: keyword
+        };
+        jQuery.extend(oData, this.optSearch);
+        //$(aInfo.grd).setPostData(oData);
+        $(aInfo.grd).jqGrid('setGridParam',{ postData: null });
+        $(aInfo.grd).jqGrid('setGridParam',{ postData:oData })
+        //clear param
+        //$(aInfo.grd).jqGrid().setGridParam({ url : 'processajax.php?q=' + aInfo.classname +'&nd='+new Date().getTime()+'&fileclass='+ aInfo.fileclass })
+    }
+
+    this.excuteFN = function(ids){
+        $(aInfo.grd).jqGrid('setGridParam',{ postData:{ 'oper':'del', 'ids':ids } });
+        $(aInfo.grd).trigger("reloadGrid");
+    }
+
+    this.tableGrid = function(){
+        //console.log(aInfo.colN);
+        html = "<thead><tr>";
+        aInfo.colN.forEach(function(entry) {
+            html += "<th>"+entry+"</th>";
+        });
+        html += "</tr><thead>";
+        $("#grd{$variable_el}").addClass("table").addClass("table-bordered").append(html);
+
+        thisClass.tableGridGetData();
+    }
+    
+    this.tableGridGetData = function(){
+        $(".tableGridDetailCash,.tableGridDetailPayment").remove();
+        var period_start = $("#period_start").val();
+        var period_end = $("#period_end").val();
+        var oData = { q:aInfo.classname,
+            oper:"search",
+            period_start: period_start,
+            period_end: period_end,
+        };
+
+        $.getJSON(this.setGrdParam(),oData, function(result){
+            if(result !== null ){
+	            if(result.rows !== undefined){
+	            	shipCash = 0;
+	            	shipPayment = 0;
+	            	totalCash = 0;
+	            	totalPayment = 0;
+	            	html = "<tbody class='tableGridDetailCash'></tbody>";
+	            	$("#grd{$variable_el}").append(html);
+	            	html = "<tbody class='tableGridDetailPayment'></tbody>";
+	            	$("#grd{$variable_el}").append(html);
+	
+		            $.each(result.rows, function(i,v){
+		
+		                $.each(v, function(index, value) {
+		                    if(typeof value == 'object'){
+		                        html = "<tr>";
+		                        value.forEach(function(entry) {
+		                            html += "<td>"+entry+"</td>";
+		                        });
+		                        html += "</tr>";
+		                    }
+		                });
+		
+		                if(result.pays[i].pay == 1){
+		                    $(".tableGridDetailCash").append(html);
+		                    shipCash += parseInt(v.shipprice);
+		                    totalCash += parseInt(v.subtotal);
+		                }else{
+		                    $(".tableGridDetailPayment").append(html);
+		                    shipPayment += parseInt(v.shipprice);
+		                    totalPayment += parseInt(v.subtotal);
+		                }
+		            });
+		            htmlCash = "<tr><td colspan='5'></td>";
+		            htmlCash += "<td>"+shipCash+"</td>";
+		            htmlCash += "<td>"+totalCash+"</td>";
+		            htmlCash += "</tr>";
+		            if(shipCash > 0 || totalCash > 0)
+		                $(".tableGridDetailCash").append(htmlCash);
+	
+		            htmlPayment = "<tr><td colspan='5'></td>";
+	    	        htmlPayment += "<td>"+shipPayment+"</td>";
+	        	    htmlPayment += "<td>"+totalPayment+"</td>";
+	            	htmlPayment += "</tr>";
+	            	if(shipPayment > 0 || totalPayment > 0)
+	                	$(".tableGridDetailPayment").append(htmlPayment);
+	            
+	
+	            totalPayback = parseInt((totalPayment - totalCash) * ((100 - result.payback)/100));
+	
+	            htmlPayback = "<tr><td colspan='5'>Pay Back</td>";
+	            htmlPayback += "<td>"+result.payback+" %</td>";
+	            htmlPayback += "<td>"+totalPayback+"</td>";
+	            htmlPayback += "</tr>";
+	            $(".tableGridDetailPayment").append(htmlPayback);
+	            }
+            }
+
+        });
+    }
+
+    this.loadData = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+        $.ajax({
+                    type: "POST",
+                    url: url,
+                    dataType: "json",
+                    data:{ pk_id:thisClass.hdnID, oper:'loadData' },
+                    success: function(data){
+                        thisClass.bindTxt(data);
+                        thisClass.bindChk(data);
+                        thisClass.bindSelect(data);
+                        if(data.country == null){
+                            $("#select_country").val('Thailand');
+                        }
+                        $("#select_country").multiselect('refresh');
+
+                        $(".orderNumber").text("Ship Detail - Order " + thisClass.hdnID);
+                        
+                        thisClass.gridOrderDetail(thisClass.hdnID);
+                        thisClass.unblockUI();
+                        thisClass.editData = true;
+                        MGMTKt_Customer.prototype.optSearch = { customerid:data.customer_id }
+                        MGMTKt_Order_Status_Email.prototype.optSearch = { orderid:thisClass.hdnID }
+                        if(grdKt_Customer!=undefined){
+                            grdKt_Customer.gridReload();
+                        }
+
+                        if(grdKt_Order_Status_Email!=undefined){
+                            grdKt_Order_Status_Email.gridReload();
+                        }
+                        
+                    },
+                    error: function(response) {
+                            if(isExpire(response.responseText)) return;
+                    }
+            });
+    }
+
+    this.exportPdf = function(){
+        var orderid = $("#txt_id").val();
+        window.open('./export/'+ aInfo.classname.replace(/_/g,'-').toLowerCase() + '.php?order_id='+orderid+"&type=pdf",'_newtab' );
+        window.focus();
+    }
+
+    this.exportExcel = function(){
+        var orderid = $("#txt_id").val();
+        location.href = './export/'+ aInfo.classname.replace(/_/g,'-').toLowerCase() + '.php?order_id='+orderid+"&type=excel";
+    }
+    
+    this.initEvent = function(){
+
+        $("#btnPdf{$variable_el}").click(function() {
+            thisClass.exportPdf();
+        });
+
+        $("#btnExcel{$variable_el}").click(function() {
+            thisClass.exportExcel();
+        });
+
+        $('#btnDelete{$variable_el}').click(function(){
+            var ids = jQuery(aInfo.grd).getGridParam('selarrrow');
+            if(ids.length == 0){
+                showMessage('{$smarty.const.MSG_NOT_SELECT}', true);
+                return;
+            }
+            thisClass.confirmDlg(msg_delconfirm, msg_delcaption, ids);
+        });
+
+
+        $('#btnAdd{$variable_el}').click(function(){
+            if(thisClass.isDetail==false){
+                thisClass.popContainAddEdit('add');
+                $('#masterDetail').hide();
+            }else{
+                window.location.href = aInfo.classname.toLowerCase() + '?editID=';
+            }
+        });
+
+        $("#period_preset").change(function(){
+            //thisClass.gridReload();
+            thisClass.tableGridGetData();
+        });
+
+        $('#period_start').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat: 'd MM yy',
+            monthNamesShort: aInfo.month,
+            onSelect: function(dateText, inst) {
+                thisClass.tableGridGetData();
+                var strFrom = $('#period_start').val();
+                var arr = strFrom.split(' ');
+                $(this).val(arr[0] + ' ' + aInfo.month[$(this).datepicker('getDate').getMonth() + 1] + ' ' + arr[2]);
+            }
+        });
+
+        $('#period_end').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            dateFormat: 'd MM yy',
+            monthNamesShort: aInfo.month,
+            onSelect: function(dateText, inst) {
+                thisClass.tableGridGetData();
+                var strFrom = $('#period_end').val();
+                var arr = strFrom.split(' ');
+                $(this).val(arr[0] + ' ' + aInfo.month[$(this).datepicker('getDate').getMonth() + 1] + ' ' + arr[2]);
+            }
+        });
+
+        $('.navbar-search[name="{$variable_el}"]').submit(function(){ thisClass.gridReload(); return false; });
+
+
+        //this.setButtonUI('.btndiv');
+        //thisClass.jqGrid();
+
+        thisClass.tableGrid();
+
+        //thisClass.initValidateForm(formId, rule);
+    }
+
+    thisClass.initEvent();
+}
+
+var grd{$variable_el}
+jQuery(document).ready(function(){
+
+    grd{$variable_el} = new MGMT{$variable_el}({$aInfo});
+
+
+});
+</script>

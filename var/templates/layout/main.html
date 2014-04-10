@@ -1,0 +1,122 @@
+{if $uiPart == 'header'}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="shortcut icon" href="../Includes/assets/ico/favicon.ico">
+
+    <title>{$pageTitle}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../Includes/assets/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="../Includes/assets/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <link href="../Includes/assets/css/css.css" rel="stylesheet">
+    <link href="../Includes/assets/css/font-awesome.css" rel="stylesheet">
+
+    <link href="../Includes/assets/css/base-admin-2.css" rel="stylesheet">
+    <link href="../Includes/assets/css/base-admin-2-responsive.css" rel="stylesheet">
+
+    <script src="../Includes/assets/bootstrap/js/vendor/jquery-1.8.3.min.js"></script>
+    <script src="../Includes/assets/bootstrap/js/vendor/bootstrap.js"></script>
+
+    <script type="text/javascript" src="{$assetPath}/js/language/{$js_language}.js"></script>
+    <script src="../Includes/assets/js/Util.js"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="./Includes/assets/css/themes/{$theme}/jquery-ui-1.8.7.custom.css" />
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="Includes/assets/js/html5shiv.js"></script>
+      <script src="Includes/assets/js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+  	<div id="dialog-confirm" title="Empty the recycle bin?" style="display:none;">
+	<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span><div id="contain_content"></div></p>
+	</div>
+    {if $showMainNavigation}
+        {include file="layout/navigation.html"}
+    {/if}
+    <div class="subnavbar">
+    {if $showSubNavigation}
+        {include file="layout/subnavigation.html"}
+    {/if}
+    </div> <!-- /subnavbar -->
+    
+    <div class="container">
+    	<div class="row">
+             <link href="../Includes/assets/css/main.css" rel="stylesheet">
+         {if $pageLogin}
+          <div class="span12">
+         {else}
+            {if $showSidebar}
+                {include file="layout/sidebar.html"}
+                <!-- MAIN CONTENT -->
+                <div class="span9 offset3">
+                    <div class="row">
+                        <div class="span9">
+                            <div id="divContent" class="my_block">
+
+            {else}
+                <!-- MAIN CONTENT -->
+                <div class="span12">
+                    <div class="row">
+                        <div class="span12">
+                            <div id="divContent" class="my_block">
+            {/if}
+            <h3><i class="{if $headerModel->getIconClass()}{$headerModel->getIconClass()}{/if}"></i> {$headerModel->getTitle()}</h3>
+            <hr>
+         {/if}
+            
+
+
+{* Footer *}
+{else}
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- FOOTER -->
+                <section>
+                    <footer>
+                        <div class="row">
+                            {if $showSidebar}
+                            <div class="span9">
+                            {else}
+                            <div class="span12">
+                            {/if}
+                                <hr>
+                            </div>
+
+                            <div class="span3">
+                                <p><strong>ARRAIEOT <i class="icon-globe"></i></strong> Back office Kittivate</p>
+                            </div>
+                            <div class="span6{if !$showSidebar} offset3{/if}">
+                                <ul class="footer-menu unstyled">
+                                    {section name=n loop=$aMainTabNav}
+                                        <li><a href="{$aMainTabNav[n].filename|escape}">{$aMainTabNav[n].title|escape}</a></li>
+                                    {/section}
+                                </ul>
+                            </div>
+                        </div>
+                    </footer>
+                </section>
+                <!-- /FOOTER -->
+
+            </div>
+            <!-- /MAIN CONTENT -->
+
+        </div>
+    </div>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+
+  </body>
+</html>
+{/if}
+
