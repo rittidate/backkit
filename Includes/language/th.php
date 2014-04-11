@@ -469,6 +469,7 @@ DEFINE("MSG_MENU2", "เมนู 2");
 DEFINE("MSG_MENU3", "เมนู 3");
 DEFINE("MSG_UPLOAD", "อัปโหลด");
 DEFINE("MSG_STOCK", "สต็อก");
+DEFINE("MSG_GET_BARCODE", "สร้าง Barcode");
 /**
  *end Menus
  */

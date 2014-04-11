@@ -23,12 +23,17 @@
                 number: true
             },
             txt_barcode_check:{
-                required: true,
+                required: true
             },
             select_menu3: {
                 required: true
             },
-        };
+		};
+        var messageRule = {             
+			txt_barcode_check:{
+                required: 'พบข้อมูลซ้ำ'
+           }
+       };
         
         this.dataSearch = function()
         {
@@ -54,7 +59,7 @@
                     //$(aInfo.grd).jqGrid().setGridParam({ url : 'processajax.php?q=' + aInfo.classname +'&nd='+new Date().getTime()+'&fileclass='+ aInfo.fileclass })
         }
 
-        this.saveData = function()
+        this.saveData = function(back)
         {
             var url = $(aInfo.grd).getGridParam('url');
             var pk_id = this.hdnID;
@@ -68,7 +73,6 @@
             } else{
                 oper = 'add';
             }
-
             //form
             if($("#upload_file").val() !== ''){
                 $("#frm{$variable_el}").attr('action', url+"&oper=uploadImage").submit();
@@ -79,7 +83,7 @@
             //$("#pnlAddEdit").block(blockStyleCSS);
             jQuery.extend(o_data, objTxt, objChk, objSel);
             $.ajax({
-            type: "POST",
+            		type: "POST",
                     url: url,
                     dataType: "json",
                     //async: false,
@@ -87,13 +91,18 @@
                     success: function(data)
                     {
                     	if(data.error == 'error'){
-                    		thisClass.clearBlock(oper, data.error);
+                    		back = false;
+                		}else if(data.error == 'duplicate'){
+                			back = false;
+                			alert("data barcode duplicate!!!!");
                     	}else{
 	               			thisClass.hdnID = data.id;
 	                        thisClass.clearBlock(oper, data.error);
 	                        thisClass.gridReload();
 	                        $('#pnlAddEdit').css('position', 'static');
                        }
+                       if(back)
+                       		thisClass.openPnlGrid('pnlGrid{$variable_el}');
                     },
                     error: function(response) {
                     		thisClass.hdnID = '';
@@ -113,7 +122,7 @@
                                 id : this.hdnID},
                 function(result){
                     $("#txt_barcode_check").attr("checked",result.check);
-                    return result.check;
+                    //return result.check;
             });
     }
 
@@ -244,11 +253,12 @@
 
                     if(data.menu1 == undefined){
                         thisClass.getMenuStep2("select_menu2", $("#select_menu1").val());
-                        //thisClass.getMenuStep2("select_menu3", $("#select_menu2").val());
                     }else{
                         thisClass.getMenuStep2("select_menu2", data.menu1);
                         thisClass.getMenuStep2("select_menu3", data.menu2);
                     }
+                    
+                    $("#select_menu3").val(data.menu3);
 
                     thisClass.checkBarcode();
                     thisClass.menuEvent();
@@ -282,7 +292,6 @@
                     option += '<option value="' + val.id + '">' + val.name + '</option>';
                 });
                 $("#select_menu1").append(option);
-                   
             });
     }
     
@@ -502,10 +511,6 @@
                                 thisClass.productQueryEvent();
 	             });
 
-				// thisClass.equalHeight();
-// 				
-			
-
     }
     
     this.getPager = function(){
@@ -650,6 +655,15 @@
         var keyword = $(".search-query").val();
         location.href = './export/'+ aInfo.classname.replace(/_/g,'-').toLowerCase() + '.php?product_query='+product_query+"&keyword="+keyword+"&type=excel";
     }
+    
+    this.getBarcode = function(){
+    	var url = $(aInfo.grd).getGridParam('url');
+        $.getJSON( url, { oper : 'getBarcode'},
+        function(result){
+                $("#txt_barcode").val(result.barcode);
+                thisClass.checkBarcode();
+        });
+    }
 
     this.initEvent = function(){
         thisClass.ctrlSave(formId, 'pnlGrid{$variable_el}');
@@ -669,15 +683,14 @@
             $("#btnSave{$variable_el}").click(function() {
                 thisClass.initValidateFormEvent(formId);
                 if (thisClass.submitForm){
-                        thisClass.saveData();
+                    thisClass.saveData(false);
                 }
             });
 
             $("#btnSaveBack{$variable_el}").click(function() {
                 thisClass.initValidateFormEvent(formId);
                 if (thisClass.submitForm){
-                    if (thisClass.saveData()){
-                        thisClass.openPnlGrid('pnlGrid{$variable_el}');
+                    if (thisClass.saveData(true)){
                         thisClass.submitForm = false;
                     }
                 }
@@ -710,11 +723,11 @@
                 thisClass.pageSelect = 1;
                 thisClass.getProduct();
             });
-            /*
-            $("#upload_target").load(function(){
-               thisClass.editAction($("#txt_id").val());
+            
+            $("#get_barcode").click(function(){
+            	thisClass.getBarcode();
+            	return false;
             });
-            */
         
             $('.navbar-search[name="{$variable_el}"]').submit(function(){
                 $("#filter_product_query").val("ALL");
@@ -723,6 +736,7 @@
                 });
                 thisClass.gridReload(); 
                 thisClass.getProduct();
+                $('.search-query[name="{$variable_el}"]').val('');
                 return false; 
             });
 
@@ -758,11 +772,11 @@
 	                //showButtonPanel: true,
 	                dateFormat: 'dd mm yy'
 	        }).val('');
-            
+
             $("#pdQuery").hide();
             this.setButtonUI('.btndiv');
             thisClass.jqGrid();
-            thisClass.initValidateForm(formId, rule);
+            thisClass.initValidateForm(formId, rule, messageRule);
             thisClass.dynatreeEvent(true); 
             thisClass.getMenuStep1();
             thisClass.getProductQuery();

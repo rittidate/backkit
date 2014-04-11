@@ -466,6 +466,7 @@ DEFINE("MSG_MENU2", "Menu 2");
 DEFINE("MSG_MENU3", "Menu 3");
 DEFINE("MSG_UPLOAD", "Upload");
 DEFINE("MSG_STOCK", "Stock");
+DEFINE("MSG_GET_BARCODE", "Get Barcode");
 /**
  *end Menus
  */

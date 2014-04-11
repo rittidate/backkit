@@ -124,7 +124,7 @@ class Kt_Define_Data_type extends Pager
         $data_type_name = $_REQUEST['data_type_name'];
         $ref_data_type = $_REQUEST['ref_data_type'];
 		$description = $_REQUEST['description'];
-        $value = empty($_REQUEST['value']) ? NULL : $_REQUEST['value'];
+        $value = empty($_REQUEST['value']) ? 0 : $_REQUEST['value'];
 		$is_active = $_REQUEST['is_active'];
         $now = new Date();
 		$tb = &$mdb2->get_factory("[pf]{$this->tb}");
@@ -138,7 +138,7 @@ class Kt_Define_Data_type extends Pager
 		$tb->update();
 		
         $response['error'] = '';
-        $response['id'] = $menu_id;
+        $response['id'] = $id;
         return $response;
     }
 	

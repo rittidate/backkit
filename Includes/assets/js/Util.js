@@ -347,9 +347,12 @@ function GridBase(aInfo){
         //$('#messageDlg').dialog('open');
     }
 
-    this.initValidateForm = function(formId, rules){
+    this.initValidateForm = function(formId, rules, messages){
+    	if(messages == undefined)
+    		messages = {};
         $(formId).validate({
             rules: rules,
+            messages: messages,
             invalidHandler: function(event, validator) {
                 // 'this' refers to the form
                 thisClass.submitForm = false;

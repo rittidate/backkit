@@ -605,4 +605,19 @@ function getPaybakPercent()
     $row = $result->fetchRow();
     return $row->value;
 }
+
+function getBarcodePrefix()
+{
+    global $mdb2;
+    $result = $mdb2->query( "SELECT data_type_name FROM kt_define_data_type WHERE ref_data_type = 'PRODUCT_BARCODE_PREFIX' and is_active = 'Y' and is_delete = 'N' " );
+    $row = $result->fetchRow();
+    return $row->data_type_name;
+}
+function getBarcodeNumber()
+{
+    global $mdb2;
+    $result = $mdb2->query( "SELECT value FROM kt_define_data_type WHERE ref_data_type = 'PRODUCT_BARCODE_STANDARD' and is_active = 'Y' and is_delete = 'N' " );
+    $row = $result->fetchRow();
+    return $row->value;
+}
 ?>

@@ -135,7 +135,7 @@ class Kt_Product extends Pager
             $data[$field] = '';
         }
 
-        $data['is_delete'] = 'N';
+        $data['is_active'] = 'Y';
 
         if(!empty($pk_id)){
             $result = $mdb2->query("select kp.*, kmp1.id as menu1, kmp2.id as menu2, kmp3.id as menu3, kps.pstock as stock, kpe.expire as expire from [pf]{$this->tb} as kp
@@ -181,7 +181,8 @@ class Kt_Product extends Pager
 		
         $now = new Date();
 		
-		if(!$this->checkSaveBarcode($id, $barcode)) return $response['error'] = 'error';
+		if(!$this->checkSaveBarcode($id, $barcode)) return $response['error'] = 'duplicate';
+
 		
         $tb = &$mdb2->get_factory("[pf]{$this->tb}");
         $tb->barcode = $barcode;
@@ -199,6 +200,8 @@ class Kt_Product extends Pager
 		$this->updateStock($id, $stock);
 
 		$this->updateExpire($id, $expire, $user_id);
+		
+		$this->updateGetBarcode($id,$barcode);
         
         $response['error'] = '';
         $response['id'] = $id;
@@ -224,8 +227,8 @@ class Kt_Product extends Pager
         $is_active = $_REQUEST['is_active'];
         $now = new Date();
 		
-		if(!$this->checkSaveBarcode($id, $barcode)) return $response['error'] = 'error';
-        
+		if(!$this->checkSaveBarcode($id, $barcode)) return $response['error'] = 'duplicate';
+        $this->updateGetBarcode($id, $barcode);
         $stock = $_REQUEST['stock'];
 
         $tb = &$mdb2->get_factory("[pf]{$this->tb}");
@@ -353,6 +356,7 @@ class Kt_Product extends Pager
 
     public function getUnit(){
         global $mdb2;
+		global $session;
         $step = $_REQUEST['step'];
         $SQL = "SELECT * FROM [pf]kt_define_data_type
          WHERE is_delete = 'N' and ref_data_type = 'UNIT_TYPE' ORDER BY data_type_name";
@@ -363,8 +367,6 @@ class Kt_Product extends Pager
              $response->rows[$i]['name']=$row->data_type_name;
              if($session["user"]->language == "th")
                 $response->rows[$i]['name']=$row->description;
-             else
-                $response->rows[$i]['name']=$row->data_type_name;
              $i++;
         }
         return $response;
@@ -590,6 +592,33 @@ class Kt_Product extends Pager
         }
 
         return $response;
+    }
+    
+    public function getBarcode(){
+    	$prefix = getBarcodePrefix();
+    	$number = getBarcodeNumber() + 1;
+    	$number= sprintf("%07d",$number);
+    	$response['barcode'] = $prefix.$number;
+		return $response;
+    }
+	
+    private function updateGetBarcode($id=null, $barcode = null){
+        global $mdb2;
+		if(!empty($barcode)){
+			$prefix = getBarcodePrefix();
+			$len = strlen($prefix);
+			$prefixBarcode = substr($barcode,0, $len);
+	        if(!empty($id)){
+	            $where = "and id = {$id}";
+	            if(!$mdb2->isHaveRow("select id from [pf]{$this->tb} where barcode = '{$barcode}' $where")){
+			        if($prefix == $prefixBarcode)
+						$mdb2->query("UPDATE kt_define_data_type set value = value+1 WHERE ref_data_type = 'PRODUCT_BARCODE_STANDARD' and is_active = 'Y' and is_delete = 'N'");
+            	}	
+	        }
+
+
+		}
+
     }
 }
 
