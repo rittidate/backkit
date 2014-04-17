@@ -39,7 +39,7 @@
         {
             var product_query = $("#filter_product_query").val();
             var menuSelect = thisClass.dynatreeValue;
-            var keyword = $(".search-query").val();
+            var keyword = $(".search-query:visible").val();
             var period_start = $("#period_start").val();
             var period_end = $("#period_end").val();
             var oData = { q:aInfo.classname,
@@ -736,8 +736,11 @@
                 });
                 thisClass.gridReload(); 
                 thisClass.getProduct();
-                $('.search-query[name="{$variable_el}"]').val('');
                 return false; 
+            });
+
+            $('.search-query').focus(function(){
+                $(this).val('')
             });
 
             $('#txt_barcode_check').click(function(e) {
