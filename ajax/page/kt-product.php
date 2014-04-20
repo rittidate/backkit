@@ -101,9 +101,9 @@ class Kt_Product extends Pager
         if(!empty($_REQUEST["keyword"])){
               $keyword = trim($_REQUEST['keyword']);
               $cond .= "and ( lower(ifnull(tb.name_th,'')) like lower(?)  ) ";
-              $cond .= "or ( lower(ifnull(tb.name_en,'')) like lower(?)  ) ";
-              $cond .= "or ( lower(ifnull(tb.barcode,'')) like lower(?)  ) ";
-              $cond .= "or ( lower(ifnull(tb.description,'')) like lower(?)  ) ";
+              $cond .= "or ( lower(ifnull(tb.name_en,'')) like lower(?)  ) and tb.is_delete='N' ";
+              $cond .= "or ( lower(ifnull(tb.barcode,'')) like lower(?)  ) and tb.is_delete='N' ";
+              $cond .= "or ( lower(ifnull(tb.description,'')) like lower(?)  ) and tb.is_delete='N' ";
               
               $datatype[] = DBTYPE_TEXT;
               $datatype[] = DBTYPE_TEXT;
@@ -181,7 +181,9 @@ class Kt_Product extends Pager
 		
         $now = new Date();
 		
-		if(!$this->checkSaveBarcode($id, $barcode)) return $response['error'] = 'duplicate';
+        if(!$this->checkSaveBarcode('', $barcode))
+            return $response['error'] = 'duplicate';
+        else{
 
 		
         $tb = &$mdb2->get_factory("[pf]{$this->tb}");
@@ -206,6 +208,7 @@ class Kt_Product extends Pager
         $response['error'] = '';
         $response['id'] = $id;
         return $response;
+        }
     }
 
     public function edit()
@@ -227,7 +230,10 @@ class Kt_Product extends Pager
         $is_active = $_REQUEST['is_active'];
         $now = new Date();
 		
-		if(!$this->checkSaveBarcode($id, $barcode)) return $response['error'] = 'duplicate';
+        if(!$this->checkSaveBarcode($id, $barcode)){
+            $response['error'] = 'duplicate';
+            $response['id'] = $id;
+        }else{
         $this->updateGetBarcode($id, $barcode);
         $stock = $_REQUEST['stock'];
 
@@ -262,6 +268,7 @@ class Kt_Product extends Pager
 
         $response['error'] = '';
         $response['id'] = $id;
+        }
         return $response;
     }
 
@@ -412,17 +419,17 @@ class Kt_Product extends Pager
     private function checkSaveBarcode($id = null, $barcode = null){
         global $mdb2;
 
-        $response['check'] = true;
+        $response = true;
         $where = '';
         if(!empty($id)){
             $where = "and id <> {$id}";
         }
         if(!empty ($barcode)){
             if($mdb2->isHaveRow("select id from [pf]{$this->tb} where barcode = '{$barcode}' $where")){
-                $response['check'] = false;
+                $response = false;
             }
         }else{
-            $response['check'] = false;
+            $response = false;
         }
         return $response;
     }
