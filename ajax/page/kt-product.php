@@ -190,6 +190,7 @@ class Kt_Product extends Pager
         $tb->barcode = $barcode;
         $tb->pmenu_id = $pmenu_id;
         $tb->name_en = $name_en;
+        $tb->name_th = $name_th;
         $tb->price = $price;
         $tb->volumn = $volumn;
         $tb->unit = $unit;
@@ -225,8 +226,9 @@ class Kt_Product extends Pager
         $volumn = $_REQUEST['volumn'];
         $unit = $_REQUEST['unit'];
         $weight = $_REQUEST['weight'];
-		$expire = $_REQUEST['expire'];
+        $expire = $_REQUEST['expire'];
         $description = $_REQUEST['description'];
+        $stock = $_REQUEST['stock'];
         $is_active = $_REQUEST['is_active'];
         $now = new Date();
 		
@@ -234,37 +236,36 @@ class Kt_Product extends Pager
             $response['error'] = 'duplicate';
             $response['id'] = $id;
         }else{
-        $this->updateGetBarcode($id, $barcode);
-        $stock = $_REQUEST['stock'];
+            $this->updateGetBarcode($id, $barcode);
 
-        $tb = &$mdb2->get_factory("[pf]{$this->tb}");
-        if(!empty($barcode))
-            $tb->barcode = $barcode;
-        if(!empty($pmenu_id))
-            $tb->pmenu_id = $pmenu_id;
-        if(!empty($name_en))
-            $tb->name_en = $name_en;
-        if(!empty($name_th))
-            $tb->name_th = $name_th;
-        if(!empty($price))
-            $tb->price = $price;
-        if(!empty($volumn))
-            $tb->volumn = $volumn;
-        if(!empty($unit))
-            $tb->unit = $unit;
-        if(!empty($weight))
-            $tb->weight = $weight;
-        if(!empty($description))
-            $tb->description = $description;
-        if(!empty($is_active))
-            $tb->is_active = $is_active;
-        $tb->get($this->pk, $id);
-        $this->setUpdated();
-        $tb->update();
+            $tb = &$mdb2->get_factory("[pf]{$this->tb}");
+            $tb->get($this->pk, $id);
+            if(!empty($barcode))
+                $tb->barcode = $barcode;
+            if(!empty($pmenu_id))
+                $tb->pmenu_id = $pmenu_id;
+            if(!empty($name_en))
+                $tb->name_en = $name_en;
+            if(!empty($name_th))
+                $tb->name_th = $name_th;
+            if(!empty($price))
+                $tb->price = $price;
+            if(!empty($volumn))
+                $tb->volumn = $volumn;
+            if(!empty($unit))
+                $tb->unit = $unit;
+            if(!empty($weight))
+                $tb->weight = $weight;
+            if(!empty($description))
+                $tb->description = $description;
+            if(!empty($is_active))
+                $tb->is_active = $is_active;
+            $this->setUpdated();
+            $tb->update();
 		
-		$this->updateStock($id, $stock);
+            $this->updateStock($id, $stock);
 
-		$this->updateExpire($id, $expire, $user_id);
+            $this->updateExpire($id, $expire, $user_id);
 
         $response['error'] = '';
         $response['id'] = $id;

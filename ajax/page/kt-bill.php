@@ -82,7 +82,7 @@ class Kt_Bill extends Pager
         if(!empty($_REQUEST["keyword"])){
               $keyword = trim($_REQUEST['keyword']);
               $cond .= "and ( lower(ifnull(ks.company,'')) like lower(?)  ) ";
-              $cond .= "or ( lower(ifnull(tb.bill_number,'')) like lower(?)  ) ";
+              $cond .= "or ( lower(ifnull(tb.bill_number,'')) like lower(?)  ) and tb.is_delete='N' ";
               $datatype[] = DBTYPE_TEXT;
               $datatype[] = DBTYPE_TEXT;
               $dataoftype[] = "%".$keyword."%";
@@ -365,6 +365,14 @@ class Kt_Bill extends Pager
              $tb->is_delete = 'Y';
              $tb->whereAdd("{$this->pk}=$id");
              $tb->update(DB_DATAOBJECT_WHEREADD_ONLY);
+
+             $row = $mdb2->queryRow("select * from [pf]{$this->tb} where {$this->pk}=$id");
+             foreach (json_decode($row->bill_detail) as $value){
+                $stock = $value->qty * $value->pack_unit;
+                $mdb2->execute("INSERT INTO [pf]kt_product_stock (pid, pstock) VALUES ({$value->pid},{$stock})
+                                ON DUPLICATE KEY UPDATE pstock = pstock - {$stock}");
+            }
+
         }
         return $this->search();
     }
