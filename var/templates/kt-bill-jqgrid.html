@@ -19,6 +19,9 @@
             txt_bill_date:{
                 required: true,
             },
+            txt_barcode_check:{
+                required: true
+            },
         };
 
         this.dataSearch = function()
@@ -234,7 +237,8 @@
                     thisClass.bindSelect(data);
 
                     $("#select_supply_id").multiselect('refresh');
-                        
+                    thisClass.checkBarcode();
+
                     thisClass.gridBillDetail(thisClass.hdnID);
                     thisClass.unblockUI();
                     thisClass.editData = true;
@@ -819,6 +823,27 @@
                 alert('Error occur. Please contact the administrator.');
             });
         }
+
+        this.checkBarcode = function(){
+            var url = $(aInfo.grd).getGridParam('url');
+            $.getJSON( url, { oper : 'checkBarcode',
+                                barcode: $("#txt_bill_number").val(),
+                                id : this.hdnID,
+                                supply_id : $("#select_supply_id").val()},
+                function(result){
+                    $("#txt_barcode_check").attr("checked",result.check);
+                    //return result.check;
+            });
+        }
+
+        this.getBarcode = function(){
+            var url = $(aInfo.grd).getGridParam('url');
+            $.getJSON( url, { oper : 'getBarcode'},
+            function(result){
+                    $("#txt_bill_number").val(result.barcode);
+                    thisClass.checkBarcode();
+            });
+        }
     
         this.initEvent = function(){
             thisClass.ctrlSave(formId, 'pnlGrid{$variable_el}');
@@ -903,6 +928,11 @@
                 thisClass.gridReload();
                 $('.search-query[name="{$variable_el}"]').val('');
                 return false;
+            });
+
+            $("#get_barcode").click(function(){
+            	thisClass.getBarcode();
+            	return false;
             });
 
             this.setButtonUI('.btndiv');

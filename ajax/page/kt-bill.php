@@ -138,27 +138,29 @@ class Kt_Bill extends Pager
         global $session;
         $md5JSON = md5($ejson);
         $json = json_decode($ejson);
-        if(!empty ($id)){
-            $row = $mdb2->queryRow("select * from [pf]{$this->tb} where {$this->pk}=$id");
-            $rowBillDetail = md5($row->bill_detail);
-            if($md5JSON !== $rowBillDetail){
-                foreach (json_decode($row->bill_detail) as $value){
-                    $stock = $value->qty * $value->pack_unit;
-                    $mdb2->execute("INSERT INTO [pf]kt_product_stock (pid, pstock) VALUES ({$value->pid},{$stock})
-                                    ON DUPLICATE KEY UPDATE pstock = pstock - {$stock}");
-                }
+        if(!empty($json)){
+            if(!empty ($id)){
+                $row = $mdb2->queryRow("select * from [pf]{$this->tb} where {$this->pk}=$id");
+                $rowBillDetail = md5($row->bill_detail);
+                if($md5JSON !== $rowBillDetail){
+                    foreach (json_decode($row->bill_detail) as $value){
+                        $stock = $value->qty * $value->pack_unit;
+                        $mdb2->execute("INSERT INTO [pf]kt_product_stock (pid, pstock) VALUES ({$value->pid},{$stock})
+                                        ON DUPLICATE KEY UPDATE pstock = pstock - {$stock}");
+                    }
 
+                    foreach ($json as $value){
+                        $stock = $value->qty * $value->pack_unit;
+                        $mdb2->execute("INSERT INTO [pf]kt_product_stock (pid, pstock) VALUES ({$value->pid},{$stock})
+                                        ON DUPLICATE KEY UPDATE pstock = pstock + {$stock}");
+                    }
+                }
+            }else{
                 foreach ($json as $value){
                     $stock = $value->qty * $value->pack_unit;
                     $mdb2->execute("INSERT INTO [pf]kt_product_stock (pid, pstock) VALUES ({$value->pid},{$stock})
                                     ON DUPLICATE KEY UPDATE pstock = pstock + {$stock}");
                 }
-            }
-        }else{
-            foreach ($json as $value){
-                $stock = $value->qty * $value->pack_unit;
-                $mdb2->execute("INSERT INTO [pf]kt_product_stock (pid, pstock) VALUES ({$value->pid},{$stock})
-                                ON DUPLICATE KEY UPDATE pstock = pstock + {$stock}");
             }
         }
     }
@@ -184,72 +186,83 @@ class Kt_Bill extends Pager
         $ejson = $_REQUEST['json'];
         $json = json_decode($ejson);
 
-        $this->updateStock('', $ejson);
+        if(!$this->checkSaveBarcode($id, $bill_number, $supply_id)){
+            $response['error'] = 'duplicate';
+            $response['id'] = $id;
+        }else{
+            
+            $this->updateStock('', $ejson);
 
-        $tb = &$mdb2->get_factory("[pf]{$this->tb}");
-        $tb->bill_number = $bill_number;
-        $tb->bill_date = $bill_date->getDate();
-        $tb->discount = $discount;
-        $tb->discount_percent = $discount_percent;
-        $tb->grandtotal = $grandtotal;
-        $tb->includevat = $includevat;
-        $tb->is_active = $is_active;
-        $tb->supply_id = $supply_id;
-        $tb->total = $total;
-        $tb->vat_value = $vat_value;
-        $tb->bill_detail = $ejson;
-        $this->setCreated();
-        $id = $tb->insert();
+            $tb = &$mdb2->get_factory("[pf]{$this->tb}");
+            $tb->bill_number = $bill_number;
+            $tb->bill_date = $bill_date->getDate();
+            $tb->discount = $discount;
+            $tb->discount_percent = $discount_percent;
+            $tb->grandtotal = $grandtotal;
+            $tb->includevat = $includevat;
+            $tb->is_active = $is_active;
+            $tb->supply_id = $supply_id;
+            $tb->total = $total;
+            $tb->vat_value = $vat_value;
+            $tb->bill_detail = $ejson;
+            $this->setCreated();
+            $id = $tb->insert();
 
-        $i = 1;
-        foreach ($json as $value){
-            $pid = $value->pid;
-            $name_en = $value->name_en;
-            $name_th = $value->name_th;
-            $volumn = $value->volumn;
-            $unit = $value->unit;
-            $pack_cost = empty($value->pack_cost)? $value->cost: $value->pack_cost;
-            $pack_unit = empty($value->pack_unit)? 1 : $value->pack_unit;
-            $price = $value->price;
-            $cost = $value->cost;
-            $qty = $value->qty;
-            $sumtotal = $value->sumtotal;
-            $mfd = $value->mfd;
-            $exp = $value->exp;
-            $vat_include = $value->vat_include;
+            $this->updateGetBarcode($id,$bill_number,$supply_id);
+            if(!empty($json)){
+            $i = 1;
+            foreach ($json as $value){
+                $pid = $value->pid;
+                $name_en = $value->name_en;
+                $name_th = $value->name_th;
+                $volumn = $value->volumn;
+                $unit = $value->unit;
+                $pack_cost = empty($value->pack_cost)? $value->cost: $value->pack_cost;
+                $pack_unit = empty($value->pack_unit)? 1 : $value->pack_unit;
+                $price = $value->price;
+                $cost = $value->cost;
+                $qty = $value->qty;
+                $sumtotal = $value->sumtotal;
+                $mfd = $value->mfd;
+                $exp = $value->exp;
+                $vat_include = $value->vat_include;
 
 
-            $SQL = "INSERT INTO [pf]kt_billdetail (no, bill_id, pid, pack_cost,pack_unit, price, cost, qty, sumtotal, vat_include) VALUES
-                    ({$i}, {$id},{$pid},'{$pack_cost}', '{$pack_unit}', '{$price}', '{$cost}', '{$qty}', '{$sumtotal}', '{$vat_include}' )
-                    ON DUPLICATE KEY UPDATE price='{$price}', cost='{$cost}', pack_unit='{$pack_unit}', pack_cost='{$pack_cost}', qty='{$qty}' , sumtotal='{$sumtotal}', vat_include='{$vat_include}'";
-            $mdb2->execute($SQL);
+                $SQL = "INSERT INTO [pf]kt_billdetail (no, bill_id, pid, pack_cost,pack_unit, price, cost, qty, sumtotal, vat_include) VALUES
+                        ({$i}, {$id},{$pid},'{$pack_cost}', '{$pack_unit}', '{$price}', '{$cost}', '{$qty}', '{$sumtotal}', '{$vat_include}' )
+                        ON DUPLICATE KEY UPDATE price='{$price}', cost='{$cost}', pack_unit='{$pack_unit}', pack_cost='{$pack_cost}', qty='{$qty}' , sumtotal='{$sumtotal}', vat_include='{$vat_include}'";
+                $mdb2->execute($SQL);
 
-            if($includevat == "Y" && $vat_include == "Y")
-                $cost = $cost +($cost * $vat /100);
+                if($includevat == "Y" && $vat_include == "Y")
+                    $cost = $cost +($cost * $vat /100);
 
-            $mdb2->execute("INSERT INTO [pf]kt_pcost (pid, pack_unit, cost, supply_id, update_cost) VALUES
-                    ({$pid}, {$pack_unit},'{$cost}', '{$supply_id}', '{$this->getCurDate()}' )
-                    ON DUPLICATE KEY UPDATE cost='{$cost}' , update_cost='{$this->getCurDate()}'");
+                $mdb2->execute("INSERT INTO [pf]kt_pcost (pid, pack_unit, cost, supply_id, update_cost) VALUES
+                        ({$pid}, {$pack_unit},'{$cost}', '{$supply_id}', '{$this->getCurDate()}' )
+                        ON DUPLICATE KEY UPDATE cost='{$cost}' , update_cost='{$this->getCurDate()}'");
 
-            $mdb2->execute("UPDATE [pf]kt_product set price = '{$price}', vat_include = '{$vat_include}' WHERE id = '{$pid}'");
-                    
-            if(!empty($mfd)){
-                $mdb2->execute("INSERT INTO [pf]kt_product_expire (pid, mfd, bill_id) VALUES
-                    ({$pid}, '{$mfd}', '{$id}' )
-                    ON DUPLICATE KEY UPDATE mfd='{$mfd}'");
+                $mdb2->execute("UPDATE [pf]kt_product set price = '{$price}', vat_include = '{$vat_include}' WHERE id = '{$pid}'");
+
+
+
+                if(!empty($mfd)){
+                    $mdb2->execute("INSERT INTO [pf]kt_product_expire (pid, mfd, bill_id) VALUES
+                        ({$pid}, '{$mfd}', '{$id}' )
+                        ON DUPLICATE KEY UPDATE mfd='{$mfd}'");
+                }
+
+                if(!empty($exp)){
+                    $mdb2->execute("INSERT INTO [pf]kt_product_expire (pid, expire, bill_id) VALUES
+                        ({$pid},'{$exp}', '{$id}' )
+                        ON DUPLICATE KEY UPDATE expire='{$exp}'");
+                }
+                $i++;
+            }
             }
 
-            if(!empty($exp)){
-                $mdb2->execute("INSERT INTO [pf]kt_product_expire (pid, expire, bill_id) VALUES
-                    ({$pid},'{$exp}', '{$id}' )
-                    ON DUPLICATE KEY UPDATE expire='{$exp}'");
-            }
-            $i++;
+            $response['error'] = '';
+            $response['id'] = $id;
+            return $response;
         }
-
-        $response['error'] = '';
-        $response['id'] = $id;
-        return $response;
     }
 
     public function edit()
@@ -274,75 +287,84 @@ class Kt_Bill extends Pager
 
         $ejson = $_REQUEST['json'];
         $json = json_decode($_REQUEST['json']);
-
-        $this->updateStock($id, $ejson);
-
-        $tb = &$mdb2->get_factory("[pf]{$this->tb}");
-        $tb->bill_number = $bill_number;
-        $tb->bill_date = $bill_date->getDate();
-        $tb->discount = $discount;
-        $tb->discount_percent = $discount_percent;
-        $tb->grandtotal = $grandtotal;
-        $tb->includevat = $includevat;
-        $tb->is_active = $is_active;
-        $tb->supply_id = $supply_id;
-        $tb->total = $total;
-        $tb->vat_value = $vat_value;
-        $tb->bill_detail = $ejson;
-        $tb->get($this->pk, $id);
-        $this->setUpdated();
-        $tb->update();
-        
-        $SQL = "UPDATE [pf]kt_billdetail set qty='0', sumtotal='0' WHERE bill_id = {$id}";
-        $mdb2->query($SQL);
-        $i++;
-        foreach ($json as $value){
-            $pid = $value->pid;
-            $name_en = $value->name_en;
-            $name_th = $value->name_th;
-            $volumn = $value->volumn;
-            $unit = $value->unit;
-            $pack_cost = empty($value->pack_cost)? $value->cost: $value->pack_cost;
-            $pack_unit = empty($value->pack_unit)? 1 : $value->pack_unit;
-            $price = $value->price;
-            $cost = $value->cost;
-            $qty = $value->qty;
-            $sumtotal = $value->sumtotal;
-            $mfd = $value->mfd;
-            $exp = $value->exp;
-            $vat_include = $value->vat_include;
-
-            $SQL = "INSERT INTO [pf]kt_billdetail (no, bill_id, pid, pack_cost,pack_unit, price, cost, qty, sumtotal, vat_include) VALUES
-                    ({$i}, {$id},{$pid},'{$pack_cost}', '{$pack_unit}', '{$price}', '{$cost}', '{$qty}', '{$sumtotal}', '{$vat_include}' )
-                    ON DUPLICATE KEY UPDATE price='{$price}', cost='{$cost}', pack_unit='{$pack_unit}', pack_cost='{$pack_cost}', qty='{$qty}' , sumtotal='{$sumtotal}', vat_include='{$vat_include}'";
-            $mdb2->execute($SQL);
-
-            if($includevat == "Y" && $vat_include == "Y")
-                $cost = $cost +($cost * $vat /100);
+        if(!$this->checkSaveBarcode($id, $bill_number, $supply_id)){
+            $response['error'] = 'duplicate';
+            $response['id'] = $id;
+        }else{
             
-            $mdb2->execute("INSERT INTO [pf]kt_pcost (pid, pack_unit, cost, supply_id, update_cost) VALUES
-                    ({$pid}, {$pack_unit},'{$cost}', '{$supply_id}', '{$this->getCurDate()}' )
-                    ON DUPLICATE KEY UPDATE cost='{$cost}' , update_cost='{$this->getCurDate()}'");
+            $this->updateStock($id, $ejson);
 
-            $mdb2->execute("UPDATE [pf]kt_product set price = '{$price}', vat_include = '{$vat_include}' WHERE id = '{$pid}'");
-            
-            if(!empty($mfd)){
-                $mdb2->execute("INSERT INTO [pf]kt_product_expire (pid, mfd, bill_id) VALUES
-                    ({$pid}, '{$mfd}', '{$id}' )
-                    ON DUPLICATE KEY UPDATE mfd='{$mfd}'");
-            }
+            $tb = &$mdb2->get_factory("[pf]{$this->tb}");
+            $tb->bill_number = $bill_number;
+            $tb->bill_date = $bill_date->getDate();
+            $tb->discount = $discount;
+            $tb->discount_percent = $discount_percent;
+            $tb->grandtotal = $grandtotal;
+            $tb->includevat = $includevat;
+            $tb->is_active = $is_active;
+            $tb->supply_id = $supply_id;
+            $tb->total = $total;
+            $tb->vat_value = $vat_value;
+            $tb->bill_detail = $ejson;
+            $tb->get($this->pk, $id);
+            $this->setUpdated();
+            $tb->update();
 
-            if(!empty($exp)){
-                $mdb2->execute("INSERT INTO [pf]kt_product_expire (pid, expire, bill_id) VALUES
-                    ({$pid},'{$exp}', '{$id}' )
-                    ON DUPLICATE KEY UPDATE expire='{$exp}'");
-            }
+            $this->updateGetBarcode($id,$bill_number,$supply_id);
+
+            $SQL = "UPDATE [pf]kt_billdetail set qty='0', sumtotal='0' WHERE bill_id = {$id}";
+            $mdb2->query($SQL);
             $i++;
+            if(!empty($json)){
+                foreach ($json as $value){
+                    $pid = $value->pid;
+                    $name_en = $value->name_en;
+                    $name_th = $value->name_th;
+                    $volumn = $value->volumn;
+                    $unit = $value->unit;
+                    $pack_cost = empty($value->pack_cost)? $value->cost: $value->pack_cost;
+                    $pack_unit = empty($value->pack_unit)? 1 : $value->pack_unit;
+                    $price = $value->price;
+                    $cost = $value->cost;
+                    $qty = $value->qty;
+                    $sumtotal = $value->sumtotal;
+                    $mfd = $value->mfd;
+                    $exp = $value->exp;
+                    $vat_include = $value->vat_include;
+
+                    $SQL = "INSERT INTO [pf]kt_billdetail (no, bill_id, pid, pack_cost,pack_unit, price, cost, qty, sumtotal, vat_include) VALUES
+                            ({$i}, {$id},{$pid},'{$pack_cost}', '{$pack_unit}', '{$price}', '{$cost}', '{$qty}', '{$sumtotal}', '{$vat_include}' )
+                            ON DUPLICATE KEY UPDATE price='{$price}', cost='{$cost}', pack_unit='{$pack_unit}', pack_cost='{$pack_cost}', qty='{$qty}' , sumtotal='{$sumtotal}', vat_include='{$vat_include}'";
+                    $mdb2->execute($SQL);
+
+                    if($includevat == "Y" && $vat_include == "Y")
+                        $cost = $cost +($cost * $vat /100);
+
+                    $mdb2->execute("INSERT INTO [pf]kt_pcost (pid, pack_unit, cost, supply_id, update_cost) VALUES
+                            ({$pid}, {$pack_unit},'{$cost}', '{$supply_id}', '{$this->getCurDate()}' )
+                            ON DUPLICATE KEY UPDATE cost='{$cost}' , update_cost='{$this->getCurDate()}'");
+
+                    $mdb2->execute("UPDATE [pf]kt_product set price = '{$price}', vat_include = '{$vat_include}' WHERE id = '{$pid}'");
+
+                    if(!empty($mfd)){
+                        $mdb2->execute("INSERT INTO [pf]kt_product_expire (pid, mfd, bill_id) VALUES
+                            ({$pid}, '{$mfd}', '{$id}' )
+                            ON DUPLICATE KEY UPDATE mfd='{$mfd}'");
+                    }
+
+                    if(!empty($exp)){
+                        $mdb2->execute("INSERT INTO [pf]kt_product_expire (pid, expire, bill_id) VALUES
+                            ({$pid},'{$exp}', '{$id}' )
+                            ON DUPLICATE KEY UPDATE expire='{$exp}'");
+                    }
+                    $i++;
+                }
+            }
+
+            $response['error'] = '';
+            $response['id'] = $id;
+            return $response;
         }
-        
-        $response['error'] = '';
-        $response['id'] = $id;
-        return $response;
     }
 
     public function editStatus(){
@@ -492,6 +514,72 @@ class Kt_Bill extends Pager
          
         return $response;
      }
+
+     public function checkBarcode(){
+        global $mdb2;
+        $id = $_REQUEST['id'];
+        $barcode = $_REQUEST['barcode'];
+        $response['check'] = true;
+        $where = '';
+        if(!empty($id)){
+            $where = "and id <> {$id}";
+        }
+        if(!empty ($barcode)){
+            if($mdb2->isHaveRow("select id from [pf]{$this->tb} where bill_number = '{$barcode}' $where")){
+                $response['check'] = false;
+            }
+        }else{
+            $response['check'] = false;
+        }
+        return $response;
+    }
+
+    public function getBarcode(){
+    	$prefix = getBillNumberPrefix();
+    	$number = getBillNumberNumber() + 1;
+    	$number= sprintf("%07d",$number);
+    	$response['barcode'] = $prefix.$number;
+        return $response;
+    }
+
+    private function updateGetBarcode($id=null, $barcode = null, $supply_id =null){
+        global $mdb2;
+        if(!empty($barcode)){
+            $prefix = getBillNumberPrefix();
+            $len = strlen($prefix);
+            $prefixBarcode = substr($barcode,0, $len);
+            if(!empty($id) && !empty($supply_id)){
+                $where = "and id = {$id} ";
+                $where .= "and supply_id = '{$supply_id}' ";
+                if(!$mdb2->isHaveRow("select id from [pf]{$this->tb} where bill_number = '{$barcode}' $where")){
+                    if($prefix == $prefixBarcode)
+                        $mdb2->query("UPDATE kt_define_data_type set value = value+1 WHERE ref_data_type = 'BILLNUMBER_STANDARD' and is_active = 'Y' and is_delete = 'N'");
+                }
+            }
+        }
+    }
+
+    private function checkSaveBarcode($id = null, $barcode = null, $supply_id = null){
+        global $mdb2;
+
+        $response = true;
+        $where = '';
+        if(!empty($id)){
+            $where = "and id <> {$id} ";
+        }
+        if(!empty($supply_id)){
+            $where .= "and supply_id = '{$supply_id}'";
+        }
+
+        if(!empty ($barcode)){
+            if($mdb2->isHaveRow("select id from [pf]{$this->tb} where bill_number = '{$barcode}' $where")){
+                $response = false;
+            }
+        }else{
+            $response = false;
+        }
+        return $response;
+    }
 
 }
 

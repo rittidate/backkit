@@ -163,7 +163,7 @@ class Kt_Product extends Pager
     {
         global $mdb2;
         global $session;
-		$user_id = $session["user"]->user_id;
+        $user_id = $session["user"]->user_id;
 		
         $barcode = $_REQUEST['barcode'];
         $pmenu_id = $_REQUEST['menu3'];

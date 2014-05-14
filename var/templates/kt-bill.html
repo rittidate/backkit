@@ -45,10 +45,13 @@
                             <div class="pnlAddEditOnly">
                                    <table cellpadding="3" style="margin:0px;font-size:9pt" border="0">
                                         <tr>
-                                            <td style="width:120px;">{$smarty.const.MSG_BILL_NUMBER}</td>
+                                            <td style="width:120px;">{$smarty.const.MSG_BILL_NUMBER}
+                                                <input type="button" id="get_barcode" class="btn" value="{$smarty.const.MSG_GET_BARCODE}"/>
+                                            </td>
                                             <td>
                                                 <input type="hidden" id="txt_id" name="txt_id"/>
                                                 <input type="text" class="input-medium" id="txt_bill_number" name="txt_bill_number"  placeholder="{$smarty.const.MSG_BILL_NUMBER}"/>
+                                                <input type="checkbox" id="txt_barcode_check" name="txt_barcode_check"/>
                                             </td>
                                             <td>&nbsp;</td>
                                         </tr>
