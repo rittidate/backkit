@@ -665,6 +665,23 @@
         });
     }
 
+    this.getDynatree = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+            $.getJSON(url, { oper : 'getDynatree' },
+            function(data){
+                $("#filter_menu_product2").dynaselect({
+                                    checkbox: true,
+                                    children: data,
+                                    onHide: function(){
+                                    	console.log('hide');
+                                    },
+                                    filter: true
+                                    
+                                });
+            });
+
+    }
+
     this.initEvent = function(){
         thisClass.ctrlSave(formId, 'pnlGrid{$variable_el}');
 
@@ -780,7 +797,8 @@
             this.setButtonUI('.btndiv');
             thisClass.jqGrid();
             thisClass.initValidateForm(formId, rule, messageRule);
-            thisClass.dynatreeEvent(true); 
+            thisClass.dynatreeEvent(true);
+            thisClass.getDynatree();
             thisClass.getMenuStep1();
             thisClass.getProductQuery();
             thisClass.getUnit(); 
