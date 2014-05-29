@@ -104,6 +104,8 @@
                 var selKeys = $.map(selNodes, function(node){
                     objContentCat.valSelect.push(node.data.key);
                });
+               options.getSelectedNodes = [];
+               options.getSelectedNodes = objContentCat.valSelect;
 
                // Get a list of all selected TOP nodes
                 var selRootNodes = node.tree.getSelectedNodes(true);
@@ -394,7 +396,7 @@
         		msgContentCat = this.options.message;
             }
             this.element.find(".msgContentCategory").text(msgContentCat);
-        }
+        },
 
 	};
 	
@@ -412,6 +414,7 @@
 		});
 	};
 
+
 	$.fn.dynaselect.defaults = {
 		min: 0,
 		max: 10,
@@ -419,17 +422,12 @@
 		orientation: 'horizontal',
 		value: 5,
 		filter: false,
-		selection: 'before',
-		tooltip: 'show',
 		handle: 'round',
 		width: '300',
 		height: '280',
 		maxSelect: 3,
 		message: "Plase Select",
-        onHide: function(){},
-		formater: function(value) {
-			return value;
-		}
+                onHide: function(){}
 	};
 	
 	$.fn.dynaselect.Constructor = Dynaselect;
