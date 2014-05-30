@@ -464,6 +464,7 @@ DEFINE("MSG_VOLUMN", "ปริมาณ");
 DEFINE("MSG_UNIT", "หน่วย");
 DEFINE("MSG_WEIGHT", "น้ำหนัก(กรัม)");
 DEFINE("MSG_IMAGE", "รูปภาพ");
+DEFINE("MSG_MENU", "เมนู");
 DEFINE("MSG_MENU1", "เมนู 1");
 DEFINE("MSG_MENU2", "เมนู 2");
 DEFINE("MSG_MENU3", "เมนู 3");

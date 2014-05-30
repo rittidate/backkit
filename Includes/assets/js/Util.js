@@ -106,7 +106,8 @@ function GridBase(aInfo){
     this.getChk = function(){
         obj = {};
         $.each(aInfo.chk_fields, function(index, field){
-                eval("obj." + field + "='" + ($("#chk_" + field).attr('checked')?'Y':'N') + "'");
+        		eval("obj." + field + "='" + ($("#chk_" + field).prop('checked')?'Y':'N') + "'");
+                //eval("obj." + field + "='" + ($("#chk_" + field).attr('checked')?'Y':'N') + "'");
             } );
             return obj;
     }
@@ -120,7 +121,8 @@ function GridBase(aInfo){
     this.bindChk = function(aData){
         
         $.each(aInfo.chk_fields, function(index, field){
-            $("#chk_"+field).attr('checked', (aData[field]=='Y'?true:false));
+        	$("#chk_"+field).prop('checked',  (aData[field]=='Y'?true:false));
+            //$("#chk_"+field).attr('checked', (aData[field]=='Y'?true:false));
         });
     }
 

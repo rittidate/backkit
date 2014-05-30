@@ -461,6 +461,7 @@ DEFINE("MSG_VOLUMN", "Volumn");
 DEFINE("MSG_UNIT", "Unit");
 DEFINE("MSG_WEIGHT", "Weight(g)");
 DEFINE("MSG_IMAGE", "Image");
+DEFINE("MSG_MENU", "Menu");
 DEFINE("MSG_MENU1", "Menu 1");
 DEFINE("MSG_MENU2", "Menu 2");
 DEFINE("MSG_MENU3", "Menu 3");

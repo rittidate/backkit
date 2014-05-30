@@ -126,7 +126,8 @@
                                 barcode: $("#txt_barcode").val(),
                                 id : this.hdnID},
                 function(result){
-                    $("#txt_barcode_check").attr("checked",result.check);
+                	$("#txt_barcode_check").prop("checked", result.check);
+                    //$("#txt_barcode_check").attr("checked",result.check);
                     //return result.check;
             });
     }
@@ -784,14 +785,16 @@
             });
 
             $('#txt_barcode_check').click(function(e) {
-                $(this).attr("checked", !$(this).attr("checked"));
+            	$(this).prop("checked",  !$(this).prop("checked"));
+                //$(this).attr("checked", !$(this).attr("checked"));
             });
 
             $('#txt_barcode').keyup(function() {
                 if($(this).val().length > 3){
                     thisClass.checkBarcode();
                 }else{
-                    $('#txt_barcode_check').attr("checked", false);
+                	$('#txt_barcode_check').prop("checked",  false);
+                    //$('#txt_barcode_check').attr("checked", false);
                 }
             });
             
