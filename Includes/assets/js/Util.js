@@ -118,6 +118,7 @@ function GridBase(aInfo){
     }
 
     this.bindChk = function(aData){
+        
         $.each(aInfo.chk_fields, function(index, field){
             $("#chk_"+field).attr('checked', (aData[field]=='Y'?true:false));
         });

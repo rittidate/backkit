@@ -135,13 +135,10 @@ class Kt_Product extends Pager
             $data[$field] = '';
         }
 
-        $data['is_active'] = 'Y';
+        //$data['is_active'] = 'Y';
 
         if(!empty($pk_id)){
-            $result = $mdb2->query("select kp.*, kmp1.id as menu1, kmp2.id as menu2, kmp3.id as menu3, kps.pstock as stock, kpe.expire as expire from [pf]{$this->tb} as kp
-                                    join kt_menu_product as kmp3 on (kp.pmenu_id = kmp3.id)
-                                    join kt_menu_product as kmp2 on (kmp3.parentid = kmp2.id)
-                                    join kt_menu_product as kmp1 on (kmp2.parentid = kmp1.id)
+            $result = $mdb2->query("select kp.*, kps.pstock as stock, kpe.expire as expire from [pf]{$this->tb} as kp
                                     left join kt_product_stock as kps on (kp.id = kps.pid)
                                     left join kt_product_expire as kpe on (kp.id = kpe.pid and kpe.bill_id = 0)
                                     where kp.{$this->pk}=$pk_id");
@@ -166,7 +163,7 @@ class Kt_Product extends Pager
         $user_id = $session["user"]->user_id;
 		
         $barcode = $_REQUEST['barcode'];
-        $pmenu_id = $_REQUEST['menu3'];
+        $pmenu_id = $_REQUEST['pmenu_id'];
         $name_en = $_REQUEST['name_en'];
         $name_th = $_REQUEST['name_th'];
         $price = $_REQUEST['price'];
@@ -219,7 +216,7 @@ class Kt_Product extends Pager
 
         $id = $_REQUEST['id'];
         $barcode = $_REQUEST['barcode'];
-        $pmenu_id = $_REQUEST['menu3'];
+        $pmenu_id = $_REQUEST['pmenu_id'];
         $name_en = $_REQUEST['name_en'];
         $name_th = $_REQUEST['name_th'];
         $price = $_REQUEST['price'];
@@ -314,52 +311,6 @@ class Kt_Product extends Pager
              $tb->update(DB_DATAOBJECT_WHEREADD_ONLY);
         }
         return $this->search();
-    }
-    
-    public function getMenuStep1(){
-        global $mdb2;
-        global $session;
-         if($session["user"]->language == "th"){
-             $name = "name_th";
-             $order = "ORDER BY name_th";
-         }else{
-            $name = "name";
-            $order = "ORDER BY name";
-         }
-        $SQL = "SELECT id, $name as name FROM [pf]kt_menu_product
-                WHERE is_delete = 'N' and parentid is null $order ";
-        $result = $mdb2->query($SQL);
-         $i=0;
-         while($row = $result->fetchRow()) {
-             $response->rows[$i]['id']=$row->id;
-             $response->rows[$i]['name']=$row->name;
-
-             $i++;
-        }
-        return $response;
-    }
-    
-    public function getMenuStep2(){
-        global $mdb2;
-        global $session;
-        $step = $_REQUEST['step'];
-         if($session["user"]->language == "th"){
-             $name = "name_th";
-             $order = "ORDER BY name_th";
-         }else{
-            $name = "name";
-            $order = "ORDER BY name";
-         }
-        $SQL = "SELECT id, $name as name FROM [pf]kt_menu_product
-                WHERE is_delete = 'N' and parentid = {$step} $order ";
-        $result = $mdb2->query($SQL);
-         $i=0;
-         while($row = $result->fetchRow()) {
-             $response->rows[$i]['id']=$row->id;
-             $response->rows[$i]['name']=$row->name;
-             $i++;
-        }
-        return $response;
     }
 
     public function getUnit(){
@@ -487,6 +438,55 @@ class Kt_Product extends Pager
                 foreach($data[$value] as $key1 => $value1){
                     $arrayStep2[] = $key1;
                     $json[$key]['children'][] = array('title' => $value1['title'], 'key' => $value1['key'],'addClass' => 'eachNode', 'icon' => false, 'children' => array());
+                }
+                foreach($arrayStep2 as $key2 => $value2){
+                    if(is_array($data[$value2])){
+                        foreach($data[$value2] as $key3 => $value3){
+                            $json[$key]['children'][$key2]['children'][] = array('title' => $value3['title'], 'key' => $value3['key'],'addClass' => 'eachNode', 'icon' => false, 'children' => array());
+                        }
+                    }
+                }
+            }
+
+        }
+        return $json;
+    }
+
+    public function getMenuSelect(){
+        global $mdb2;
+		global $session;
+        $json = $dataInt = $data = $arr = $arrayStep = array();
+        $result = $mdb2->query("select name, name_th, id, parentid from [pf]kt_menu_product WHERE is_delete = 'N' and is_active = 'Y' and parentid is null
+                                union
+                                select name, name_th, id, parentid from [pf]kt_menu_product WHERE is_delete = 'N' and is_active = 'Y'
+                                and parentid in (select id from kt_menu_product WHERE is_delete = 'N' and is_active = 'Y' and parentid is null)
+                                union
+                                select name, name_th, id, parentid from [pf]kt_menu_product WHERE is_delete = 'N' and is_active = 'Y'
+                                and parentid in ( select id from [pf]kt_menu_product WHERE is_delete = 'N' and is_active = 'Y'
+                                    and parentid in (select id from kt_menu_product  WHERE is_delete = 'N'  and is_active = 'Y' and parentid is null) )
+                                order by parentid,id");
+        if($result->numRows() > 0){
+            while($row = $result->fetchRow()){
+        		$name = $row->name;
+                if($session["user"]->language == "th"){
+		            $name = $row->name_th;
+		        }
+                if($row->parentid == ""){
+                    $arrayStep[] = $row->id;
+
+                    $json[] = array('title' => $name, 'key' => $row->id,'addClass' => 'eachNode', 'icon' => false, 'children' => array(), 'hideCheckbox' => true, 'unselectable' => true);
+                }else{
+                    $data[$row->parentid][$row->id]['title'] = $name;
+                    $data[$row->parentid][$row->id]['key'] = $row->id;
+                    $data[$row->parentid][$row->id]['parent'] = $row->parentid;
+                }
+            }
+
+            foreach($arrayStep as $key => $value){
+                $arrayStep2 = array();
+                foreach($data[$value] as $key1 => $value1){
+                    $arrayStep2[] = $key1;
+                    $json[$key]['children'][] = array('title' => $value1['title'], 'key' => $value1['key'],'addClass' => 'eachNode', 'icon' => false, 'children' => array(),'hideCheckbox' => true, 'unselectable' => true);
                 }
                 foreach($arrayStep2 as $key2 => $value2){
                     if(is_array($data[$value2])){

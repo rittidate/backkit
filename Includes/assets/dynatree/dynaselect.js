@@ -43,7 +43,7 @@
           '</button>');
         this.divElement.append(this.element);
         
-		this.area = $('<div class="dynaSelectArea"></div>');
+		this.area = $('<div id="dsa_'+$(element).attr('id')+'" class="dynaSelectArea"></div>');
                 $("body").append(this.area);
                 this.area.css({"width": "300"});
 		this.area.addClass("ui-multiselect-menu ui-widget ui-widget-content ui-corner-all");
@@ -74,7 +74,11 @@
 			this.elementFilter.find(".dynKeywords").change(function(){
             		objContentCat.searchDynaSelect();
             });
-                
+
+                if(!options.checkAll){
+                    this.elementFilter.find(".dynCheckAll").hide();
+                    this.elementFilter.find(".dynUncheckAll").hide();
+                }
             this.elementFilter.find(".dynCheckAll").on({
 				click: $.proxy(this.filterCheckAll, this)
 			});
@@ -84,13 +88,15 @@
 			});
                 
 		}
+
 		
 		this.area.append(this.treeArea);
 		
         this.treeArea.find(".treedynaselect").dynatree({
             checkbox: options.checkbox,
-            selectMode: 3,
+            selectMode: options.selectMode,
             children: options.children,
+            autoCollapse: options.autoCollapse,
             onDblClick: function(node, event) {
                 node.toggleExpand();
             },
@@ -133,8 +139,8 @@
         this.element.addClass("ui-widget ui-multiselect ui-state-default ui-corner-all");
 
         this.element.css("width", options.width);
-        
-        this.area.css({ 'top': this.element.offset().top + this.element.height() + 6, 'left': this.element.offset().left });
+
+
         
         this.msgSelectTree();
         
@@ -309,7 +315,7 @@
 		click: function(ev){
             if (!this.isClick){
                 this.element.toggleClass('ui-state-active');
-                
+                this.area.css({ 'top': this.element.offset().top + this.element.height() + 6, 'left': this.element.offset().left });
                 this.area.toggle();
                 //$("#{$variable_el}blockContent").toggle();
 	            if (!this.element.hasClass('ui-state-active')){
@@ -419,9 +425,10 @@
 		min: 0,
 		max: 10,
 		step: 1,
-		orientation: 'horizontal',
-		value: 5,
+                selectMode: 3,
+                autoCollapse: false,
 		filter: false,
+                checkAll: true,
 		handle: 'round',
 		width: '300',
 		height: '280',

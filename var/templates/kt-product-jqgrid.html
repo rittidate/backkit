@@ -78,7 +78,13 @@
                 $("#upload_file").val('');
             }
 
-            var o_data = { oper : oper, pk_id : pk_id};
+                var selRootNodes = $("#dsa_select_menu").find(".treedynaselect").dynatree("getTree").getSelectedNodes();
+                // ... and convert to a key array:
+                var pmenu_id = $.map(selRootNodes, function(node){
+                  return node.data.key;
+                });
+
+            var o_data = { oper : oper, pk_id : pk_id, pmenu_id : pmenu_id[0]};
             //$("#pnlAddEdit").block(blockStyleCSS);
             jQuery.extend(o_data, objTxt, objChk, objSel);
             $.ajax({
@@ -244,23 +250,18 @@
                 data:{ pk_id:thisClass.hdnID, oper:'loadData' },
                 success: function(data){
                     $('#upload_file').val('');
-
+                    if(data.pmenu_id > 0){
+                        var tree = $("#dsa_select_menu").find(".treedynaselect").dynatree("getTree");
+                        tree.getNodeByKey(data.pmenu_id).select();
+                        tree.activateKey(data.pmenu_id)
+                    }
                     thisClass.bindTxt(data);
                     thisClass.bindChk(data);
                     thisClass.bindSelect(data);
                     thisClass.bindImg(data);
 
-                    if(data.menu1 == undefined){
-                        thisClass.getMenuStep2("select_menu2", $("#select_menu1").val());
-                    }else{
-                        thisClass.getMenuStep2("select_menu2", data.menu1);
-                        thisClass.getMenuStep2("select_menu3", data.menu2);
-                    }
-                    
-                    $("#select_menu3").val(data.menu3);
 
                     thisClass.checkBarcode();
-                    thisClass.menuEvent();
                     thisClass.unblockUI();
 
                     thisClass.editData = true;
@@ -270,7 +271,7 @@
                 }
         });
     }
-    
+/*
     this.menuEvent = function(){
         $("#select_menu1").change(function(){
             thisClass.getMenuStep2("select_menu2",$(this).val());
@@ -314,6 +315,8 @@
                 }
         });
     }
+
+*/
 
     this.getProductQuery = function(){
         var url = $(aInfo.grd).getGridParam('url');
@@ -683,6 +686,25 @@
 
     }
 
+    this.getMenuSelect = function(){
+        var url = $(aInfo.grd).getGridParam('url');
+            $.getJSON(url, { oper : 'getMenuSelect' },
+            function(data){
+                $("#select_menu").dynaselect({
+                                    filter: true,
+                                    checkbox: true,
+                                    children: data,
+                                    selectMode: 1,
+                                    checkAll: false,
+                                    autoCollapse: true,
+                                    onHide: function(){
+
+                                    }
+                                });
+            });
+
+    }
+
     this.initEvent = function(){
         thisClass.ctrlSave(formId, 'pnlGrid{$variable_el}');
 
@@ -799,7 +821,8 @@
             thisClass.jqGrid();
             thisClass.initValidateForm(formId, rule, messageRule);
             thisClass.getDynatree();
-            thisClass.getMenuStep1();
+            thisClass.getMenuSelect();
+            //thisClass.getMenuStep1();
             thisClass.getProductQuery();
             thisClass.getUnit(); 
             $(window).resize(this.fitTable);
